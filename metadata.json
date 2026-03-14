@@ -1,0 +1,5 @@
+{
+  "name": "國文錯題本",
+  "description": "A digital notebook for tracking and reviewing Chinese language mistakes, featuring flashcards, quiz generation, and Google Sheets integration.",
+  "requestFramePermissions": []
+}

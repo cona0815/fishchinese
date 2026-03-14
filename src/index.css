@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+@theme {
+  --font-zhuyin: "ZCOOL KuaiLe", cursive;
+  --font-sans: "Noto Sans TC", sans-serif;
+}
