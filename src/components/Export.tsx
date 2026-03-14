@@ -16,7 +16,11 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
 
   // Derived categories
   const availableCategories = useMemo(() => {
-    const cats = new Set(words.map(w => w.錯誤類型).filter(Boolean));
+    const cats = new Set(words.map(w => {
+      let t = w.錯誤類型 || '';
+      if (t === '字詞' || t === '字義' || t === '語詞') return '字詞義';
+      return t;
+    }).filter(Boolean));
     return ['全部', ...Array.from(cats)];
   }, [words]);
 
@@ -25,7 +29,11 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
 
     // Filter by category
     if (selectedCategory !== '全部') {
-      candidates = candidates.filter(w => w.錯誤類型 === selectedCategory);
+      candidates = candidates.filter(w => {
+        let t = w.錯誤類型 || '';
+        if (t === '字詞' || t === '字義' || t === '語詞') t = '字詞義';
+        return t === selectedCategory;
+      });
     }
     
     // Sort
@@ -36,8 +44,8 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
     } else if (quizOrder === 'error_count') {
       candidates.sort((a, b) => (b.錯誤次數 || 0) - (a.錯誤次數 || 0));
     } else if (quizOrder === 'date') {
-      // Sort by updated time (newest first)
-      candidates.sort((a, b) => new Date(b.更新時間 || '').getTime() - new Date(a.更新時間 || '').getTime());
+      // Sort by ID (newest first)
+      candidates.sort((a, b) => (parseInt(b.ID.substring(1)) || 0) - (parseInt(a.ID.substring(1)) || 0));
     }
     
     setQuizData(candidates.slice(0, quizCount));
@@ -86,37 +94,44 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
         questionContent = w.字詞;
         answerContent = w.注音 || '';
 
-      } else if (type.includes('成語') || type.includes('字詞義')) {
+      } else if (type.includes('成語') || type.includes('字詞義') || type === '字詞' || type === '字義' || type === '語詞') {
         // For Idioms/Meanings:
         // Question: Show word
         // Answer: Meaning (Definition)
         
-        // Teacher mode shows definition as answer? Or maybe fill in the blank?
-        // Usually for these, we test definition matching or fill in blank.
-        // Let's assume we test Definition -> Word? Or Word -> Definition?
-        // Standard quiz: Word -> Write Definition/Meaning
-        
         questionContent = w.字詞;
         answerContent = w.釋義 || '';
+      } else if (type.includes('閱讀') || type.includes('文言') || type.includes('國學')) {
+        // For Reading Comprehension / Classical Chinese:
+        // Show the original article, question, and options
+        questionContent = (
+          <div className="space-y-3">
+            <div className="font-bold text-xl">{w.字詞}</div>
+            {w.釋義 && <div className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{w.釋義}</div>}
+            {w.考點 && <div className="font-bold text-slate-800 mt-2">{w.考點}</div>}
+            {w.例句 && <div className="text-sm font-mono whitespace-pre-wrap text-slate-700">{w.例句}</div>}
+          </div>
+        ) as any; // Cast to any because ReactNode is valid but type might be string initially
+        answerContent = w.詳情 || '';
       } else {
-        // Others (Reading, etc.)
+        // Others
         questionContent = w.字詞; // Title
         answerContent = w.詳情 || ''; // Answer key
       }
 
       return (
-        <tr key={w.ID} className="h-14 border-b border-slate-300">
-          <td className="p-2 text-center border-r border-slate-300 w-12">{startIndex + i}.</td>
-          <td className="p-2 border-r border-slate-300 font-serif text-lg">
+        <tr key={w.ID} className="border-b border-slate-300">
+          <td className="p-2 text-center border-r border-slate-300 w-12 align-top pt-4">{startIndex + i}.</td>
+          <td className="p-4 border-r border-slate-300 font-serif text-lg align-top">
             {questionContent}
           </td>
-          <td className="p-2 border-r border-slate-300 w-1/4">
+          <td className="p-4 border-r border-slate-300 w-1/4 align-top">
             {/* Student writes answer here */}
             {quizMode === 'teacher' && (
-              <span className="text-red-600 font-medium">{answerContent}</span>
+              <span className="text-red-600 font-medium whitespace-pre-wrap">{answerContent}</span>
             )}
           </td>
-          <td className="p-2 w-1/3">
+          <td className="p-2 w-1/3 align-top">
             {/* Correction column */}
           </td>
         </tr>

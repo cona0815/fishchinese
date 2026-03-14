@@ -25,7 +25,11 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
 
   // Derived data
   const availableCategories = useMemo(() => {
-    const cats = new Set(words.map(w => w.錯誤類型).filter(Boolean));
+    const cats = new Set(words.map(w => {
+      let t = w.錯誤類型 || '';
+      if (t === '字詞' || t === '字義' || t === '語詞') return '字詞義';
+      return t;
+    }).filter(Boolean));
     return ['全部', ...Array.from(cats)];
   }, [words]);
 
@@ -58,7 +62,11 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
 
     // Filter by category (mainly for wrong review, but applicable to today too if desired)
     if (config.category !== '全部') {
-      q = q.filter(w => w.錯誤類型 === config.category);
+      q = q.filter(w => {
+        let t = w.錯誤類型 || '';
+        if (t === '字詞' || t === '字義' || t === '語詞') t = '字詞義';
+        return t === config.category;
+      });
     }
 
     // Sort/Shuffle

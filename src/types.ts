@@ -11,6 +11,7 @@ export interface Word {
   上次複習: string;
   下次複習: string;
   題庫來源: string;
+  筆記?: string;
 }
 
 export type ViewMode = 'card' | 'table';

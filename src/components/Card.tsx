@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Word } from '../types';
-import { ChevronDown, ChevronUp, Edit2, Maximize2, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Edit2, Maximize2, X, Save, Loader2 } from 'lucide-react';
+import { api } from '../services/api';
 
 interface CardProps {
   word: Word;
@@ -12,6 +13,22 @@ interface CardProps {
 export const Card: React.FC<CardProps> = ({ word, size, onEdit }) => {
   const [showDetail, setShowDetail] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isEditingNote, setIsEditingNote] = useState(false);
+  const [noteText, setNoteText] = useState(word.筆記 || '');
+  const [isSavingNote, setIsSavingNote] = useState(false);
+
+  const handleSaveNote = async () => {
+    setIsSavingNote(true);
+    try {
+      await api.updateWord({ ...word, 筆記: noteText });
+      word.筆記 = noteText; // Optimistic update
+      setIsEditingNote(false);
+    } catch (error) {
+      alert('儲存筆記失敗，請稍後再試');
+    } finally {
+      setIsSavingNote(false);
+    }
+  };
 
   const count = word.錯誤次數 || 0;
   const typeName = word.錯誤類型 || '其他';
@@ -264,6 +281,72 @@ export const Card: React.FC<CardProps> = ({ word, size, onEdit }) => {
                     )}
                   </>
                 )}
+
+                {/* Notes Section */}
+                <div className="bg-yellow-50 p-6 rounded-xl border border-yellow-200 shadow-sm">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-bold text-yellow-800 text-xl flex items-center gap-2">
+                      <span className="w-1 h-6 bg-yellow-500 rounded-full"></span>
+                      我的筆記
+                    </h3>
+                    {!isEditingNote && (
+                      <button 
+                        onClick={() => setIsEditingNote(true)}
+                        className="text-sm px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors"
+                      >
+                        編輯筆記
+                      </button>
+                    )}
+                  </div>
+                  
+                  {isEditingNote ? (
+                    <div className="space-y-3">
+                      <textarea
+                        value={noteText}
+                        onChange={(e) => setNoteText(e.target.value)}
+                        placeholder="在這裡輸入你的筆記、口訣或相關連結..."
+                        className="w-full p-3 border border-yellow-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition-all bg-white min-h-[100px] text-base"
+                      />
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          onClick={() => {
+                            setIsEditingNote(false);
+                            setNoteText(word.筆記 || '');
+                          }}
+                          className="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors text-sm"
+                          disabled={isSavingNote}
+                        >
+                          取消
+                        </button>
+                        <button 
+                          onClick={handleSaveNote}
+                          disabled={isSavingNote}
+                          className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-sm flex items-center gap-2"
+                        >
+                          {isSavingNote ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                          儲存筆記
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-slate-700 whitespace-pre-wrap leading-relaxed min-h-[60px]">
+                      {word.筆記 ? (
+                        // Render URLs as clickable links
+                        word.筆記.split(/(https?:\/\/[^\s]+)/g).map((part, i) => 
+                          part.match(/^https?:\/\//) ? (
+                            <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline break-all">
+                              {part}
+                            </a>
+                          ) : (
+                            <span key={i}>{part}</span>
+                          )
+                        )
+                      ) : (
+                        <span className="text-slate-400 italic">點擊右上角「編輯筆記」開始記錄...</span>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             

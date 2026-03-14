@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, CheckCircle, List, FileText, PlusCircle, Settings as SettingsIcon, HelpCircle } from 'lucide-react';
+import { BookOpen, CheckCircle, List, FileText, PlusCircle, Settings as SettingsIcon, HelpCircle, Brain } from 'lucide-react';
 
 interface NavbarProps {
   currentPage: string;
@@ -13,11 +13,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, setPage }) => {
     { id: 'dashboard', label: '瀏覽全覽', icon: List },
     { id: 'export', label: '匯出考卷', icon: FileText },
     { id: 'add', label: '新增題源', icon: PlusCircle },
+    { id: 'notebook', label: 'AI 弱點分析', icon: Brain },
   ];
 
   return (
     <nav className="bg-slate-900 text-white p-4 flex flex-wrap items-center gap-4 shadow-md sticky top-0 z-50">
-      <div className="text-xl font-bold mr-4 hidden md:block text-indigo-400">錯題本 2025</div>
+      <div className="text-xl font-bold mr-4 hidden md:block text-indigo-400">國文錯題本</div>
       
       {navItems.map((item) => (
         <button

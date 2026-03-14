@@ -6,6 +6,7 @@ import { AddData } from './components/AddData';
 import { Export } from './components/Export';
 import { Settings } from './components/Settings';
 import { FeatureGuide } from './components/FeatureGuide';
+import { Notebook } from './components/Notebook';
 import { Word } from './types';
 import { api } from './services/api';
 
@@ -140,6 +141,8 @@ export default function App() {
         return <Export words={words} />;
       case 'guide':
         return <FeatureGuide />;
+      case 'notebook':
+        return <Notebook words={words} />;
       default:
         return <div>Page not found</div>;
     }
