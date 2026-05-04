@@ -165,27 +165,33 @@ export const CreateExam: React.FC = () => {
           {Array.from({ length: totalPages }).map((_, pageIndex) => (
             <div 
               key={pageIndex}
-              className="bg-white shadow-2xl min-h-[297mm] w-full max-w-[210mm] mx-auto p-12 md:p-20 print:p-8 print:shadow-none print:w-full print:max-w-none rounded-[2.5rem] print:rounded-none overflow-hidden relative flex flex-col print:break-after-page mb-8 print:mb-0"
+              className="bg-white shadow-2xl min-h-[297mm] w-full max-w-[210mm] mx-auto p-10 md:p-14 print:p-8 print:shadow-none print:w-full print:max-w-none rounded-[2.5rem] print:rounded-none overflow-hidden relative flex flex-col print:break-after-page mb-8 print:mb-0"
             >
-              {/* Header - Only on every page for consistent look like the sample */}
-              <div className="text-center border-b-4 border-slate-800 pb-6 mb-8">
-                <h1 className="text-3xl font-serif font-black mb-4 tracking-[0.3em] text-slate-900">國語文能力診斷練習卷</h1>
-                <div className="flex justify-between items-end text-lg font-serif text-slate-800 px-6">
-                  <div className="space-x-8 flex items-center">
-                    <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[80px]">班級：</span>
-                    <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[120px]">姓名：</span>
-                    <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[60px]">座號：</span>
-                  </div>
-                  <div className="px-3 py-1 bg-slate-100 rounded-lg text-[9px] font-black text-slate-500 tracking-widest uppercase">
-                    {quizMode === 'teacher' ? 'TEACHER COPY' : 'STUDENT VERSION'}
+              {/* Header - Only on the FIRST page */}
+              {pageIndex === 0 ? (
+                <div className="text-center border-b-4 border-slate-800 pb-6 mb-8">
+                  <h1 className="text-3xl font-serif font-black mb-4 tracking-[0.3em] text-slate-900">國語文能力診斷練習卷</h1>
+                  <div className="flex justify-between items-end text-lg font-serif text-slate-800 px-6">
+                    <div className="space-x-8 flex items-center">
+                      <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[80px]">班級：</span>
+                      <span className="border-b-2 border-slate-300 pb-1 px-4 min-w-[120px]">姓名：</span>
+                      <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[60px]">座號：</span>
+                    </div>
+                    <div className="px-3 py-1 bg-slate-100 rounded-lg text-[9px] font-black text-slate-500 tracking-widest uppercase">
+                      {quizMode === 'teacher' ? 'TEACHER COPY' : 'STUDENT VERSION'}
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="text-right mb-4 border-b border-slate-100 pb-2">
+                   <span className="text-[10px] font-black text-slate-300 tracking-[0.2em]">國語文能力診斷練習卷 (續)</span>
+                </div>
+              )}
 
               <div className="flex-grow">
                 <table className="w-full border-collapse text-base font-serif border border-slate-300">
                   <thead>
-                    <tr className="bg-slate-50 print:bg-gray-50 border-y-2 border-slate-800">
+                    <tr className="bg-slate-50 print:bg-gray-100 border-b-2 border-slate-800">
                       <th className="p-2 w-12 text-center font-black text-slate-600 border-r border-slate-300">#</th>
                       <th className="p-2 text-left font-black border-r border-slate-300">測驗內容</th>
                       <th className="p-2 w-1/4 text-center font-black border-r border-slate-300">作答區</th>
@@ -200,11 +206,11 @@ export const CreateExam: React.FC = () => {
                           <td className="p-2 text-center text-slate-400 font-bold align-middle border-r border-slate-300">
                             {pageIndex * QUESTIONS_PER_PAGE + i + 1}
                           </td>
-                          <td className="p-3 font-serif text-lg align-middle leading-tight text-slate-800 border-r border-slate-300">
+                          <td className="p-2 md:p-3 font-serif text-lg align-middle leading-tight text-slate-800 border-r border-slate-300">
                             {q.question}
                             {q.hint && <span className="text-slate-400 text-xs italic ml-2">※{q.hint}</span>}
                           </td>
-                          <td className="p-3 bg-slate-50/10 align-middle text-center min-h-[50px] border-r border-slate-300">
+                          <td className="p-2 md:p-3 bg-slate-50/10 align-middle text-center min-h-[50px] border-r border-slate-300">
                             {quizMode === 'teacher' && (
                               <div className="text-rose-600 font-black text-xl animate-in zoom-in duration-300">
                                 {q.answer}
