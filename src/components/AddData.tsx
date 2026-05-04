@@ -323,7 +323,7 @@ export const AddData: React.FC<AddDataProps> = ({ token, onSuccess, initialData,
     <div className="max-w-4xl mx-auto p-4 md:p-6">
       <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
         <Sparkles className="text-indigo-600" />
-        {initialData ? '編輯題目' : 'AI 題庫分析'}
+        {initialData ? '編輯題目' : '新增錯題題源'}
       </h2>
 
       {/* Input Section */}

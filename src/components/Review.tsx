@@ -19,7 +19,7 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
   // Config state
   const [config, setConfig] = useState({
     count: mode === 'today' ? 15 : 20,
-    category: '全部',
+    categories: ['全部'] as string[],
     isRandom: true
   });
 
@@ -30,8 +30,27 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
       if (t === '字詞' || t === '字義' || t === '語詞') return '字詞義';
       return t;
     }).filter(Boolean));
-    return ['全部', ...Array.from(cats)];
+    return Array.from(cats);
   }, [words]);
+
+  const toggleCategory = (cat: string) => {
+    if (cat === '全部') {
+      setConfig(prev => ({ ...prev, categories: ['全部'] }));
+      return;
+    }
+
+    setConfig(prev => {
+      const filtered = prev.categories.filter(c => c !== '全部');
+      let next: string[];
+      if (filtered.includes(cat)) {
+        next = filtered.filter(c => c !== cat);
+        if (next.length === 0) next = ['全部'];
+      } else {
+        next = [...filtered, cat];
+      }
+      return { ...prev, categories: next };
+    });
+  };
 
   const eligibleWords = useMemo(() => {
     if (mode === 'today') {
@@ -61,11 +80,11 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
     let q = [...eligibleWords];
 
     // Filter by category (mainly for wrong review, but applicable to today too if desired)
-    if (config.category !== '全部') {
+    if (!config.categories.includes('全部')) {
       q = q.filter(w => {
         let t = w.錯誤類型 || '';
         if (t === '字詞' || t === '字義' || t === '語詞') t = '字詞義';
-        return t === config.category;
+        return config.categories.includes(t);
       });
     }
 
@@ -166,15 +185,25 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
           <div>
             <label className="block text-slate-700 font-bold mb-2 flex items-center gap-2">
               <Filter size={18} />
-              題目分類
+              題目分類 (可複選)
             </label>
             <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => toggleCategory('全部')}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  config.categories.includes('全部')
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                全部
+              </button>
               {availableCategories.map(cat => (
                 <button
                   key={cat}
-                  onClick={() => setConfig({ ...config, category: cat })}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    config.category === cat
+                  onClick={() => toggleCategory(cat)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    config.categories.includes(cat) && !config.categories.includes('全部')
                       ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}

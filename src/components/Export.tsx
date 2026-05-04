@@ -9,7 +9,7 @@ interface ExportProps {
 export const Export: React.FC<ExportProps> = ({ words }) => {
   const [quizCount, setQuizCount] = useState(20);
   const [quizOrder, setQuizOrder] = useState<'random' | 'sequential' | 'error_count' | 'date'>('random');
-  const [selectedCategory, setSelectedCategory] = useState<string>('全部');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(['全部']);
   const [quizMode, setQuizMode] = useState<'student' | 'teacher'>('student');
   const [quizData, setQuizData] = useState<Word[]>([]);
   const [showPreview, setShowPreview] = useState(false);
@@ -21,18 +21,35 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
       if (t === '字詞' || t === '字義' || t === '語詞') return '字詞義';
       return t;
     }).filter(Boolean));
-    return ['全部', ...Array.from(cats)];
+    return Array.from(cats);
   }, [words]);
+
+  const toggleCategory = (cat: string) => {
+    if (cat === '全部') {
+      setSelectedCategories(['全部']);
+      return;
+    }
+
+    setSelectedCategories(prev => {
+      const filtered = prev.filter(c => c !== '全部');
+      if (filtered.includes(cat)) {
+        const next = filtered.filter(c => c !== cat);
+        return next.length === 0 ? ['全部'] : next;
+      } else {
+        return [...filtered, cat];
+      }
+    });
+  };
 
   const generateQuiz = () => {
     let candidates = [...words];
 
-    // Filter by category
-    if (selectedCategory !== '全部') {
+    // Filter by categories
+    if (!selectedCategories.includes('全部')) {
       candidates = candidates.filter(w => {
         let t = w.錯誤類型 || '';
         if (t === '字詞' || t === '字義' || t === '語詞') t = '字詞義';
-        return t === selectedCategory;
+        return selectedCategories.includes(t);
       });
     }
     
@@ -146,7 +163,7 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4">
           <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
             <FileText className="text-indigo-600" />
-            匯出考卷
+            匯出錯題練習考卷
           </h2>
           <div className="flex gap-2">
              <button 
@@ -160,24 +177,42 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4">
           {/* Category Selection */}
-          <div className="space-y-2">
+          <div className="space-y-3 col-span-1 md:col-span-2">
             <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
               <Filter size={16} />
-              題目分類
+              題目分類 (可複選)
             </label>
-            <select 
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50"
-            >
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => toggleCategory('全部')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all shadow-sm ${
+                  selectedCategories.includes('全部')
+                    ? 'bg-indigo-600 text-white border-transparent'
+                    : 'bg-white border border-slate-200 text-slate-600 hover:border-indigo-300'
+                }`}
+              >
+                全部
+              </button>
               {availableCategories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+                <button
+                  key={cat}
+                  onClick={() => toggleCategory(cat)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all shadow-sm ${
+                    selectedCategories.includes(cat) && !selectedCategories.includes('全部')
+                      ? 'bg-indigo-600 text-white border-transparent'
+                      : 'bg-white border border-slate-200 text-slate-600 hover:border-indigo-300'
+                  }`}
+                >
+                  {cat}
+                </button>
               ))}
-            </select>
+            </div>
           </div>
+        </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Sort Order */}
           <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700 flex items-center gap-2">

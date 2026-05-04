@@ -7,6 +7,7 @@ import { Export } from './components/Export';
 import { Settings } from './components/Settings';
 import { FeatureGuide } from './components/FeatureGuide';
 import { Notebook } from './components/Notebook';
+import { CreateExam } from './components/CreateExam';
 import { Word } from './types';
 import { api } from './services/api';
 
@@ -143,6 +144,8 @@ export default function App() {
         return <FeatureGuide />;
       case 'notebook':
         return <Notebook words={words} />;
+      case 'create-exam':
+        return <CreateExam />;
       default:
         return <div>Page not found</div>;
     }
