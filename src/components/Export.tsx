@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Word } from '../types';
-import { Printer, FileText, Filter, SortDesc, Shuffle } from 'lucide-react';
+import { Printer, FileText, Filter, Shuffle, ChevronLeft } from 'lucide-react';
 
 interface ExportProps {
   words: Word[];
@@ -71,89 +71,6 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
 
   const handlePrint = () => {
     window.print();
-  };
-
-  // Helper to render table rows
-  const renderRows = (items: Word[], startIndex: number) => {
-    return items.map((w, i) => {
-      let questionContent = w.字詞;
-      let answerContent = '';
-      let type = w.錯誤類型 || '';
-      
-      // Determine Question and Answer based on type
-      if (type.includes('字形')) {
-        // For Character Shape:
-        // Question: Show word with blank or Zhuyin hint
-        // Answer: The correct character
-        
-        // Extract the target character from brackets if exists: e.g., 脫「穎」而出
-        const match = w.字詞.match(/「(.*?)」/);
-        const targetChar = match ? match[1] : '';
-        
-        if (targetChar) {
-          // Replace target char with blank and show Zhuyin hint if available
-          const hint = w.注音 ? `(${w.注音})` : '___';
-          questionContent = w.字詞.replace(/「.*?」/, ` ${hint} `);
-          answerContent = targetChar;
-        } else {
-          // Fallback if no brackets found
-          questionContent = w.字詞;
-          answerContent = w.考點 || '';
-        }
-
-      } else if (type.includes('字音')) {
-        // For Pronunciation:
-        // Question: Show word (target char might be bracketed)
-        // Answer: The Zhuyin
-        
-        // Remove brackets for question display if preferred, or keep them to indicate target
-        // Let's keep brackets to be precise
-        questionContent = w.字詞;
-        answerContent = w.注音 || '';
-
-      } else if (type.includes('成語') || type.includes('字詞義') || type === '字詞' || type === '字義' || type === '語詞') {
-        // For Idioms/Meanings:
-        // Question: Show word
-        // Answer: Meaning (Definition)
-        
-        questionContent = w.字詞;
-        answerContent = w.釋義 || '';
-      } else if (type.includes('閱讀') || type.includes('文言') || type.includes('國學')) {
-        // For Reading Comprehension / Classical Chinese:
-        // Show the original article, question, and options
-        questionContent = (
-          <div className="space-y-3">
-            <div className="font-bold text-xl">{w.字詞}</div>
-            {w.釋義 && <div className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{w.釋義}</div>}
-            {w.考點 && <div className="font-bold text-slate-800 mt-2">{w.考點}</div>}
-            {w.例句 && <div className="text-sm font-mono whitespace-pre-wrap text-slate-700">{w.例句}</div>}
-          </div>
-        ) as any; // Cast to any because ReactNode is valid but type might be string initially
-        answerContent = w.詳情 || '';
-      } else {
-        // Others
-        questionContent = w.字詞; // Title
-        answerContent = w.詳情 || ''; // Answer key
-      }
-
-      return (
-        <tr key={w.ID} className="border-b border-slate-300">
-          <td className="p-2 text-center border-r border-slate-300 w-12 align-top pt-4">{startIndex + i}.</td>
-          <td className="p-4 border-r border-slate-300 font-serif text-lg align-top">
-            {questionContent}
-          </td>
-          <td className="p-4 border-r border-slate-300 w-1/4 align-top">
-            {/* Student writes answer here */}
-            {quizMode === 'teacher' && (
-              <span className="text-red-600 font-medium whitespace-pre-wrap">{answerContent}</span>
-            )}
-          </td>
-          <td className="p-2 w-1/3 align-top">
-            {/* Correction column */}
-          </td>
-        </tr>
-      );
-    });
   };
 
   return (
