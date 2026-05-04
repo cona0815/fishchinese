@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Sparkles, Upload, FileText, Camera, X, Loader2, Printer, ChevronLeft } from 'lucide-react';
+import { Sparkles, Upload, FileText, Camera, X, Loader2, Printer, ChevronLeft, FileDown } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
 interface ExtractedQuestion {
@@ -112,6 +112,76 @@ export const CreateExam: React.FC = () => {
     window.print();
   };
 
+  const handleExportWord = () => {
+    const header = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <style>
+          table { border-collapse: collapse; width: 100%; font-family: "MS UI Gothic", serif; }
+          th, td { border: 1px solid #cbd5e1; padding: 12px; text-align: left; }
+          .title { text-align: center; font-size: 24pt; font-weight: bold; margin-bottom: 20px; }
+          .header-info { display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 14pt; }
+        </style>
+      </head>
+      <body>
+    `;
+    const footer = "</body></html>";
+    
+    let content = "";
+    questions.forEach((_ , pageIndex) => {
+      if (pageIndex === 0) {
+        content += `
+          <div class="title">國語文能力診斷練習卷</div>
+          <div class="header-info">
+            <span>班級：________ 姓名：____________ 座號：____</span>
+            <span style="font-size: 8pt; color: #64748b;">${quizMode === 'teacher' ? 'TEACHER COPY' : 'STUDENT VERSION'}</span>
+          </div>
+        `;
+      } else {
+        content += `<br clear=all style='mso-break-type:page-break'><div style="text-align: right; font-size: 9pt; color: #94a3b8;">國語文能力診斷練習卷 (續)</div>`;
+      }
+      
+      content += `
+        <table>
+          <thead>
+            <tr style="background-color: #f8fafc;">
+              <th style="width: 40pt; text-align: center;">#</th>
+              <th>測驗內容</th>
+              <th style="width: 120pt; text-align: center;">作答區</th>
+              <th style="width: 120pt; text-align: center;">初評/訂正</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      const pageQuestions = questions.slice(pageIndex * 15, (pageIndex + 1) * 15);
+      pageQuestions.forEach((q, i) => {
+        content += `
+          <tr>
+            <td style="text-align: center;">${pageIndex * 15 + i + 1}</td>
+            <td style="font-size: 16pt;">${q.question} ${q.hint ? `<i>(※${q.hint})</i>` : ''}</td>
+            <td style="text-align: center; color: #e11d48; font-weight: bold; font-size: 18pt;">${quizMode === 'teacher' ? q.answer : ''}</td>
+            <td></td>
+          </tr>
+        `;
+      });
+      
+      content += "</tbody></table>";
+    });
+
+    const sourceHTML = header + content + footer;
+    const blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `國語文練習卷_${new Date().toISOString().slice(0,10)}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   if (status === 'preview' || status === 'printing') {
     const QUESTIONS_PER_PAGE = 15;
     const totalPages = Math.ceil(questions.length / QUESTIONS_PER_PAGE);
@@ -151,6 +221,13 @@ export const CreateExam: React.FC = () => {
             </div>
             
             <button 
+              onClick={handleExportWord}
+              className="flex items-center gap-2 px-6 py-2.5 bg-white border-2 border-teal-600 text-teal-600 rounded-2xl hover:bg-teal-50 transition-all font-black"
+            >
+              <FileDown size={18} />
+              下傳 Word
+            </button>
+            <button 
               onClick={handlePrint}
               className="flex items-center gap-2 px-8 py-2.5 bg-teal-600 text-white rounded-2xl hover:bg-teal-700 transition-all font-black shadow-lg shadow-teal-100"
             >
@@ -170,8 +247,8 @@ export const CreateExam: React.FC = () => {
               {/* Header - Only on the FIRST page */}
               {pageIndex === 0 ? (
                 <div className="text-center border-b-4 border-slate-800 pb-4 mb-6">
-                  <h1 className="text-3xl font-serif font-black mb-3 tracking-[0.3em] text-slate-900">國語文能力診斷練習卷</h1>
-                  <div className="flex justify-between items-end text-lg font-serif text-slate-800 px-6">
+                  <h1 className="text-4xl font-serif font-black mb-4 tracking-[0.3em] text-slate-900">國語文能力診斷練習卷</h1>
+                  <div className="flex justify-between items-end text-xl font-serif text-slate-800 px-6">
                     <div className="space-x-8 flex items-center">
                       <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[80px]">班級：</span>
                       <span className="border-b-2 border-slate-300 pb-1 px-4 min-w-[120px]">姓名：</span>
@@ -189,13 +266,13 @@ export const CreateExam: React.FC = () => {
               )}
 
               <div className="flex-grow">
-                <table className="w-full border-collapse text-base font-serif border border-slate-300">
+                <table className="w-full border-collapse text-lg font-serif border border-slate-300">
                   <thead>
                     <tr className="bg-slate-50 print:bg-gray-100 border-b-2 border-slate-800">
-                      <th className="p-2 w-12 text-center font-black text-slate-600 border-r border-slate-300">#</th>
-                      <th className="p-2 text-left font-black border-r border-slate-300">測驗內容</th>
-                      <th className="p-2 w-1/4 text-center font-black border-r border-slate-300">作答區</th>
-                      <th className="p-2 w-1/4 text-center font-black">初評/訂正</th>
+                      <th className="p-3 w-14 text-center font-black text-slate-600 border-r border-slate-300">#</th>
+                      <th className="p-3 text-left font-black border-r border-slate-300">測驗內容</th>
+                      <th className="p-3 w-1/4 text-center font-black border-r border-slate-300">作答區</th>
+                      <th className="p-3 w-1/4 text-center font-black">初評/訂正</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -203,21 +280,21 @@ export const CreateExam: React.FC = () => {
                       .slice(pageIndex * QUESTIONS_PER_PAGE, (pageIndex + 1) * QUESTIONS_PER_PAGE)
                       .map((q, i) => (
                         <tr key={i} className="border-b border-slate-300">
-                          <td className="p-2 text-center text-slate-400 font-bold align-middle border-r border-slate-300">
+                          <td className="p-3 text-center text-slate-400 font-bold align-middle border-r border-slate-300">
                             {pageIndex * QUESTIONS_PER_PAGE + i + 1}
                           </td>
-                          <td className="py-2 px-3 font-serif text-lg align-middle leading-tight text-slate-800 border-r border-slate-300">
+                          <td className="py-3 px-4 font-serif text-xl align-middle leading-tight text-slate-800 border-r border-slate-300">
                             {q.question}
-                            {q.hint && <span className="text-slate-400 text-xs italic ml-2">※{q.hint}</span>}
+                            {q.hint && <span className="text-slate-400 text-sm italic ml-2">※{q.hint}</span>}
                           </td>
-                          <td className="py-2 px-3 bg-slate-50/10 align-middle text-center min-h-[50px] border-r border-slate-300">
+                          <td className="py-3 px-4 bg-slate-50/10 align-middle text-center min-h-[60px] border-r border-slate-300">
                             {quizMode === 'teacher' && (
-                              <div className="text-rose-600 font-black text-xl animate-in zoom-in duration-300">
+                              <div className="text-rose-600 font-black text-2xl animate-in zoom-in duration-300">
                                 {q.answer}
                               </div>
                             )}
                           </td>
-                          <td className="p-2 align-middle"></td>
+                          <td className="p-3 align-middle"></td>
                         </tr>
                       ))}
                   </tbody>
