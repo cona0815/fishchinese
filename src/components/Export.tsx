@@ -271,12 +271,12 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
 
                   {/* Content Table */}
                   <div className="flex-grow">
-                    <table className="w-full border-collapse text-base font-serif">
+                    <table className="w-full border-collapse text-base font-serif border border-slate-300">
                       <thead>
                         <tr className="bg-slate-50 print:bg-gray-100 border-y-2 border-slate-800">
-                          <th className="p-2 w-12 text-center font-black text-slate-500">#</th>
-                          <th className="p-2 text-left font-black">測驗內容</th>
-                          <th className="p-2 w-1/4 text-center font-black border-x border-slate-100">作答區</th>
+                          <th className="p-2 w-12 text-center font-black text-slate-500 border-r border-slate-300">#</th>
+                          <th className="p-2 text-left font-black border-r border-slate-300">測驗內容</th>
+                          <th className="p-2 w-1/4 text-center font-black border-r border-slate-300">作答區</th>
                           <th className="p-2 w-1/4 text-center font-black">初評/訂正</th>
                         </tr>
                       </thead>
@@ -313,14 +313,14 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
                             }
 
                             return (
-                              <tr key={w.ID} className="border-b border-slate-100">
-                                <td className="p-2 text-center text-slate-400 font-bold align-middle">
+                              <tr key={w.ID} className="border-b border-slate-300">
+                                <td className="p-2 text-center text-slate-400 font-bold align-middle border-r border-slate-300">
                                   {pageIndex * QUESTIONS_PER_PAGE + i + 1}
                                 </td>
-                                <td className="p-3 font-serif text-lg align-middle leading-tight text-slate-800">
+                                <td className="p-3 font-serif text-lg align-middle leading-tight text-slate-800 border-r border-slate-300">
                                   {questionContent}
                                 </td>
-                                <td className="p-3 bg-slate-50/20 border-x border-slate-100 align-middle text-center min-h-[50px]">
+                                <td className="p-3 bg-slate-50/20 align-middle text-center min-h-[50px] border-r border-slate-300">
                                   {quizMode === 'teacher' && (
                                     <div className="text-rose-600 font-black text-xl animate-in zoom-in duration-300">
                                       {answerContent}
