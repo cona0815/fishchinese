@@ -89,7 +89,7 @@ export const CreateExam: React.FC = () => {
       }
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-3-flash-preview",
         contents: { parts: parts },
         config: { tools: [{ googleSearch: {} }] },
       });
@@ -116,91 +116,100 @@ export const CreateExam: React.FC = () => {
     return (
       <div className="max-w-5xl mx-auto p-4 md:p-8">
         {/* Print Controls */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 print:hidden flex justify-between items-center">
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 mb-8 print:hidden flex flex-col sm:flex-row justify-between items-center gap-6">
           <button 
             onClick={() => setStatus('idle')}
-            className="flex items-center gap-2 text-slate-600 hover:text-indigo-600 transition-colors"
+            className="flex items-center gap-2 text-slate-400 font-bold hover:text-teal-600 transition-all group"
           >
-            <ChevronLeft size={20} />
+            <div className="p-2 bg-slate-50 group-hover:bg-teal-50 rounded-xl transition-colors">
+              <ChevronLeft size={20} />
+            </div>
             返回重新上傳
           </button>
           
-          <div className="flex gap-4 items-center">
-            <div className="flex bg-slate-100 p-1 rounded-lg">
+          <div className="flex flex-wrap gap-4 items-center justify-center">
+            <div className="flex bg-slate-100 p-1 rounded-2xl">
               <button
                 onClick={() => setQuizMode('student')}
-                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
-                  quizMode === 'student' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'
+                className={`px-6 py-2 text-sm font-black rounded-xl transition-all ${
+                  quizMode === 'student' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-400'
                 }`}
               >
-                學生版
+                學生模式
               </button>
               <button
                 onClick={() => setQuizMode('teacher')}
-                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
-                  quizMode === 'teacher' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'
+                className={`px-6 py-2 text-sm font-black rounded-xl transition-all ${
+                  quizMode === 'teacher' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-400'
                 }`}
               >
-                教師版
+                教師解答
               </button>
             </div>
             
             <button 
               onClick={handlePrint}
-              className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all font-bold"
+              className="flex items-center gap-2 px-8 py-2.5 bg-teal-600 text-white rounded-2xl hover:bg-teal-700 transition-all font-black shadow-lg shadow-teal-100"
             >
               <Printer size={18} />
-              列印 / 另存 PDF
+              列印考卷
             </button>
           </div>
         </div>
 
         {/* Paper Layout */}
-        <div className="bg-white shadow-xl min-h-[297mm] w-full max-w-[210mm] mx-auto p-10 md:p-16 print:p-0 print:shadow-none print:w-full print:max-w-none">
-          <div className="text-center border-b-2 border-black pb-6 mb-8 uppercase">
-            <h1 className="text-3xl font-serif font-bold mb-4 tracking-widest">國文練習卷</h1>
-            <div className="flex justify-between text-base font-serif text-slate-900 px-4">
-              <div className="space-x-8">
-                <span>班級：__________</span>
-                <span>姓名：__________</span>
-                <span>座號：__________</span>
+        <div className="bg-white shadow-2xl min-h-[297mm] w-full max-w-[210mm] mx-auto p-12 md:p-20 print:p-0 print:shadow-none print:w-full print:max-w-none rounded-[2.5rem] print:rounded-none overflow-hidden relative">
+          <div className="absolute top-0 left-0 w-full h-1 bg-teal-600/10 print:hidden"></div>
+          
+          <div className="text-center border-b-4 border-slate-800 pb-10 mb-12">
+            <h1 className="text-4xl font-serif font-black mb-6 tracking-[0.3em] text-slate-900">國語文能力診斷練習卷</h1>
+            <div className="flex justify-between items-end text-lg font-serif text-slate-800 px-6">
+              <div className="space-x-12 flex items-center">
+                <span className="border-b-2 border-slate-300 pb-1 px-4 min-w-[120px]">班級：</span>
+                <span className="border-b-2 border-slate-300 pb-1 px-4 min-w-[150px]">姓名：</span>
+                <span className="border-b-2 border-slate-300 pb-1 px-4 min-w-[100px]">座號：</span>
               </div>
-              <div className="text-slate-500 text-sm">
-                {quizMode === 'teacher' ? '教師解答版' : '學生練習版'}
+              <div className="px-4 py-1.5 bg-slate-100 rounded-lg text-xs font-bold text-slate-500 tracking-widest uppercase">
+                {quizMode === 'teacher' ? 'AUTHORIZED TEACHER COPY' : 'STUDENT PRACTICE VERSION'}
               </div>
             </div>
           </div>
 
-          <table className="w-full border-collapse border border-slate-300 text-base">
-            <thead>
-              <tr className="bg-slate-100 print:bg-gray-100 border-b border-slate-300">
-                <th className="p-3 border-r border-slate-300 w-12 text-center">題號</th>
-                <th className="p-3 border-r border-slate-300 text-left">題目</th>
-                <th className="p-3 border-r border-slate-300 w-1/4 text-left">作答 / 答案</th>
-                <th className="p-3 w-1/4 text-left">訂正</th>
-              </tr>
-            </thead>
-            <tbody>
-              {questions.map((q, i) => (
-                <tr key={i} className="border-b border-slate-300">
-                  <td className="p-3 text-center border-r border-slate-300 align-top pt-4">{q.id || i + 1}.</td>
-                  <td className="p-4 border-r border-slate-300 font-serif text-lg align-top leading-relaxed">
-                    {q.question}
-                    {q.hint && <span className="text-slate-400 text-sm ml-2">({q.hint})</span>}
-                  </td>
-                  <td className="p-4 border-r border-slate-300 align-top">
-                    {quizMode === 'teacher' && (
-                      <span className="text-red-600 font-bold text-xl font-serif">{q.answer}</span>
-                    )}
-                  </td>
-                  <td className="p-3 align-top"></td>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-lg font-serif">
+              <thead>
+                <tr className="bg-slate-50 print:bg-gray-50 border-y-2 border-slate-800">
+                  <th className="p-4 w-16 text-center font-black text-slate-500">#</th>
+                  <th className="p-4 text-left font-black">測驗內容</th>
+                  <th className="p-4 w-1/4 text-left font-black">作答區</th>
+                  <th className="p-4 w-1/4 text-left font-black">初評/訂正</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {questions.map((q, i) => (
+                  <tr key={i} className="border-b border-slate-100 hover:bg-slate-50/30 transition-colors">
+                    <td className="p-4 text-center text-slate-400 font-bold align-top pt-6">{q.id || i + 1}</td>
+                    <td className="p-6 font-serif text-xl align-top leading-relaxed text-slate-800">
+                      {q.question}
+                      {q.hint && <span className="text-slate-400 text-sm italic ml-3">※{q.hint}</span>}
+                    </td>
+                    <td className="p-6 bg-slate-50/20 border-x border-slate-100 align-top min-h-[60px]">
+                      {quizMode === 'teacher' && (
+                        <div className="text-rose-600 font-black text-2xl animate-in zoom-in duration-300 shadow-sm inline-block px-2">
+                          {q.answer}
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-4 align-top"></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-          <div className="mt-12 text-center text-xs text-slate-400 print:text-gray-400 font-mono">
-            Generated by 國文錯題本 練習卷生成器
+          <div className="mt-20 pt-8 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-300 font-black uppercase tracking-[0.2em] italic">
+            <span>Powered by AI Learning Engine</span>
+            <span>Generated At {new Date().toLocaleDateString()}</span>
           </div>
         </div>
       </div>
@@ -209,22 +218,22 @@ export const CreateExam: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6">
-      <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
-        <div className="text-center mb-10">
-          <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6 text-indigo-600">
+      <div className="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-sm border border-slate-100">
+        <div className="text-center mb-12">
+          <div className="w-20 h-20 bg-teal-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-teal-600 shadow-inner">
             <Sparkles size={40} />
           </div>
-          <h1 className="text-3xl font-bold text-slate-800 mb-4">練習卷生成器</h1>
-          <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-            上傳考卷 PDF 或圖片，AI 會自動偵測題目、整理成表格，<br />
-            並為您生成一份乾淨的複習練習卷。
+          <h1 className="text-3xl font-black text-slate-800 mb-4 tracking-tight">練習卷生成器</h1>
+          <p className="text-slate-500 text-lg max-w-2xl mx-auto font-medium">
+            上傳考卷 PDF 或圖片，AI 會自動偵測題目、整理成表格，<br className="hidden sm:block" />
+            並為您生成一份乾淨、精緻的複習練習卷。
           </p>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-10">
           {/* File Upload Area */}
           <div 
-            className="border-3 border-dashed border-slate-200 rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 hover:border-indigo-300 transition-all group relative h-64"
+            className="border-4 border-dashed border-slate-100 rounded-[2rem] p-10 flex flex-col items-center justify-center cursor-pointer hover:bg-teal-50/30 hover:border-teal-200 transition-all group relative h-72 shadow-sm"
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => {
               e.preventDefault();
@@ -241,12 +250,12 @@ export const CreateExam: React.FC = () => {
             />
             
             {previewUrl ? (
-              <div className="absolute inset-0 p-4">
-                <div className="relative h-full w-full bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center">
+              <div className="absolute inset-0 p-6">
+                <div className="relative h-full w-full bg-slate-50 rounded-2xl overflow-hidden shadow-inner flex items-center justify-center border border-slate-100">
                   <img src={previewUrl} className="h-full object-contain" alt="Preview" />
                   <button 
                     onClick={(e) => { e.stopPropagation(); clearFile(); }}
-                    className="absolute top-2 right-2 p-2 bg-white/80 hover:bg-white text-rose-500 rounded-full shadow-lg"
+                    className="absolute top-4 right-4 p-3 bg-white text-rose-500 rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all"
                   >
                     <X size={20} />
                   </button>
@@ -254,53 +263,55 @@ export const CreateExam: React.FC = () => {
               </div>
             ) : (
               <>
-                <div className="bg-indigo-50 p-6 rounded-full group-hover:bg-indigo-100 transition-colors mb-6">
-                  <Upload size={40} className="text-indigo-600" />
+                <div className="bg-teal-50 p-8 rounded-[1.5rem] group-hover:bg-teal-100 transition-all mb-6 transform group-hover:rotate-6 shadow-sm">
+                  <Upload size={40} className="text-teal-600" />
                 </div>
                 <div className="text-center">
-                  <p className="text-xl font-bold text-slate-700">點擊或拖曳檔案至此</p>
-                  <p className="text-slate-400 mt-2">支援 JPG, PNG, PDF 格式</p>
+                  <p className="text-xl font-black text-slate-700 tracking-tight">點擊或拖曳檔案至此</p>
+                  <p className="text-slate-400 mt-2 font-bold uppercase tracking-widest text-[10px]">支援 JPG, PNG, PDF 格式</p>
                 </div>
               </>
             )}
           </div>
 
           <div className="flex flex-col gap-4">
-             <label className="text-slate-700 font-bold flex items-center gap-2">
-              <FileText size={18} />
-              或者直接貼上題目文字：
+             <label className="text-slate-500 font-black text-xs uppercase tracking-widest flex items-center gap-2 pl-2">
+              <FileText size={14} className="text-teal-500" />
+              或貼上題目文字：
             </label>
             <textarea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="例如：1.「ㄎㄨㄟˋ」贈  2.「雛」鳥..."
-              className="w-full h-32 p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50 transition-all resize-none"
+              className="w-full h-32 p-6 border border-slate-100 rounded-3xl focus:ring-4 focus:ring-teal-50 outline-none bg-slate-50/50 transition-all resize-none text-slate-700 font-medium font-serif"
             />
           </div>
 
-          <button
-            onClick={handleAnalyze}
-            disabled={status === 'analyzing' || (!selectedFile && !inputText)}
-            className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 shadow-lg shadow-indigo-200"
-          >
-            {status === 'analyzing' ? (
-              <>
-                <Loader2 className="animate-spin" />
-                AI 分析整理中...
-              </>
-            ) : (
-              <>
-                <Sparkles size={24} />
-                開始整理練習卷
-              </>
+          <div className="pt-4">
+            <button
+              onClick={handleAnalyze}
+              disabled={status === 'analyzing' || (!selectedFile && !inputText)}
+              className="w-full py-5 bg-teal-600 text-white rounded-3xl font-black text-xl hover:bg-teal-700 disabled:opacity-30 disabled:grayscale transition-all flex items-center justify-center gap-3 shadow-xl shadow-teal-100 transform active:scale-95"
+            >
+              {status === 'analyzing' ? (
+                <>
+                  <Loader2 className="animate-spin" size={24} />
+                  AI 正在精準整理中...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={24} />
+                  生成專屬練習卷
+                </>
+              )}
+            </button>
+            
+            {message && status === 'analyzing' && (
+              <p className="text-center text-teal-600 font-black mt-6 animate-bounce text-sm uppercase tracking-widest">
+                {message}
+              </p>
             )}
-          </button>
-          
-          {message && status === 'analyzing' && (
-            <p className="text-center text-indigo-600 font-medium animate-pulse">
-              {message}
-            </p>
-          )}
+          </div>
         </div>
       </div>
     </div>

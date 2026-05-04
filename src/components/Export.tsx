@@ -159,17 +159,19 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-8">
       {/* Controls - Hidden when printing */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 print:hidden space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4">
-          <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <FileText className="text-indigo-600" />
+      <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-8 print:hidden space-y-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-50 pb-6">
+          <h2 className="text-3xl font-black text-slate-800 flex items-center gap-3 tracking-tight">
+            <div className="bg-teal-50 p-2 rounded-2xl">
+              <FileText className="text-teal-600" size={28} />
+            </div>
             匯出錯題練習考卷
           </h2>
-          <div className="flex gap-2">
+          <div className="flex gap-3 w-full md:w-auto">
              <button 
               onClick={handlePrint}
               disabled={!showPreview}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-slate-800 text-white rounded-xl hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-bold shadow-lg"
             >
               <Printer size={18} />
               列印 / 儲存 PDF
@@ -177,20 +179,20 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Category Selection */}
-          <div className="space-y-3 col-span-1 md:col-span-2">
-            <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-              <Filter size={16} />
+          <div className="space-y-4 col-span-1 md:col-span-2">
+            <label className="text-sm font-black text-slate-700 flex items-center gap-2 ml-1">
+              <Filter size={16} className="text-teal-500" />
               題目分類 (可複選)
             </label>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => toggleCategory('全部')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all shadow-sm ${
+                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all shadow-sm ${
                   selectedCategories.includes('全部')
-                    ? 'bg-indigo-600 text-white border-transparent'
-                    : 'bg-white border border-slate-200 text-slate-600 hover:border-indigo-300'
+                    ? 'bg-teal-600 text-white shadow-xl shadow-teal-200 border-transparent'
+                    : 'bg-slate-50 border border-slate-100 text-slate-500 hover:bg-slate-100'
                 }`}
               >
                 全部
@@ -199,10 +201,10 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
                 <button
                   key={cat}
                   onClick={() => toggleCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all shadow-sm ${
+                  className={`px-5 py-2 rounded-xl text-sm font-bold transition-all shadow-sm ${
                     selectedCategories.includes(cat) && !selectedCategories.includes('全部')
-                      ? 'bg-indigo-600 text-white border-transparent'
-                      : 'bg-white border border-slate-200 text-slate-600 hover:border-indigo-300'
+                      ? 'bg-teal-600 text-white shadow-xl shadow-teal-200 border-transparent'
+                      : 'bg-slate-50 border border-slate-100 text-slate-500 hover:bg-slate-100'
                   }`}
                 >
                   {cat}
@@ -212,17 +214,17 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Sort Order */}
           <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-              <SortDesc size={16} />
+            <label className="text-sm font-black text-slate-700 flex items-center gap-2 ml-1">
+              <Shuffle size={16} className="text-teal-500" />
               出題順序
             </label>
             <select 
               value={quizOrder}
               onChange={(e) => setQuizOrder(e.target.value as any)}
-              className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50"
+              className="w-full p-3 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 outline-none bg-slate-50/50 font-medium text-slate-700"
             >
               <option value="random">隨機亂數</option>
               <option value="error_count">錯誤次數 (多到少)</option>
@@ -233,7 +235,7 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
 
           {/* Count */}
           <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700">
+            <label className="text-sm font-black text-slate-700 ml-1">
               考題數量
             </label>
             <input 
@@ -241,28 +243,28 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
               value={quizCount} 
               onChange={(e) => setQuizCount(parseInt(e.target.value))}
               min="1" max="100"
-              className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50"
+              className="w-full p-3 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 outline-none bg-slate-50/50 font-medium text-slate-700"
             />
           </div>
 
           {/* Mode */}
           <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700">
+            <label className="text-sm font-black text-slate-700 ml-1">
               考卷模式
             </label>
-            <div className="flex bg-slate-100 p-1 rounded-lg">
+            <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-100">
               <button
                 onClick={() => setQuizMode('student')}
-                className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
-                  quizMode === 'student' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all ${
+                  quizMode === 'student' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'
                 }`}
               >
                 學生版
               </button>
               <button
                 onClick={() => setQuizMode('teacher')}
-                className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
-                  quizMode === 'teacher' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all ${
+                  quizMode === 'teacher' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'
                 }`}
               >
                 教師版 (含解)
@@ -273,9 +275,9 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
 
         <button 
           onClick={generateQuiz}
-          className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
+          className="w-full py-4 bg-teal-600 text-white rounded-2xl font-black text-lg hover:bg-teal-700 transition-all shadow-xl shadow-teal-200 transform hover:translate-y-[-2px] active:translate-y-[1px]"
         >
-          產生考卷預覽
+          產生專業考卷預覽
         </button>
       </div>
 

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Word, ViewMode, CardSize } from '../types';
 import { Card } from './Card';
-import { LayoutGrid, List, Filter, ArrowUp, ArrowDown, Search, Trash2 } from 'lucide-react';
+import { LayoutGrid, List, Filter, ArrowUp, ArrowDown, Search, Trash2, BookCheck, AlertCircle, TrendingUp, Brain } from 'lucide-react';
 import { api } from '../services/api';
 
 interface DashboardProps {
@@ -9,9 +9,10 @@ interface DashboardProps {
   onEdit: (word: Word) => void;
   token: string;
   refreshData: () => void;
+  setPage: (page: string) => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ words, onEdit, token, refreshData }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ words, onEdit, token, refreshData, setPage }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('card');
   const [cardSize, setCardSize] = useState<CardSize>('m');
   const [filterType, setFilterType] = useState<string>('all');
@@ -22,6 +23,30 @@ export const Dashboard: React.FC<DashboardProps> = ({ words, onEdit, token, refr
   const [bulkSource, setBulkSource] = useState<string>('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const stats = useMemo(() => {
+    const total = words.length;
+    const needReview = words.filter(w => {
+      if (!w.下次複習) return false;
+      const next = new Date(w.下次複習);
+      return next <= new Date();
+    }).length;
+    const highError = words.filter(w => (w.錯誤次數 || 0) >= 3).length;
+    
+    // Calculate category distribution
+    const categories: Record<string, number> = {};
+    words.forEach(w => {
+      let t = w.錯誤類型 || '未分類';
+      if (t === '字詞' || t === '字義' || t === '語詞') t = '字詞義';
+      categories[t] = (categories[t] || 0) + 1;
+    });
+    
+    const topWeakness = Object.entries(categories)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 1)[0]?.[0] || '無';
+
+    return { total, needReview, highError, topWeakness };
+  }, [words]);
 
   const filteredWords = useMemo(() => {
     let result = [...words];
@@ -144,12 +169,83 @@ export const Dashboard: React.FC<DashboardProps> = ({ words, onEdit, token, refr
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
+      {/* AI Recommendation Message */}
+      <div className="mb-8 bg-teal-50/50 border border-teal-100 rounded-3xl p-6 flex flex-col md:flex-row items-center gap-6 shadow-sm overflow-hidden relative">
+        <div className="absolute -right-8 -top-8 w-32 h-32 bg-emerald-200/20 rounded-full blur-2xl"></div>
+        <div className="bg-white p-4 rounded-full shadow-sm text-teal-600 animate-bounce">
+          <Brain size={32} />
+        </div>
+        <div className="flex-grow text-center md:text-left relative z-10">
+          <h2 className="text-xl font-bold text-slate-800 mb-1">
+            {stats.needReview > 0 
+              ? `今天還有 ${stats.needReview} 題待複習，準備好挑戰了嗎？` 
+              : "今天的複習任務已全部達成！休息一下或是練習新題目吧。"}
+          </h2>
+          <p className="text-teal-600 font-medium italic opacity-80">
+            {stats.topWeakness !== '無' 
+              ? `AI 偵測到你在「${stats.topWeakness}」類型出錯較多，建議優先加強。` 
+              : "太棒了！目前你的學習狀況非常穩定。"}
+          </p>
+        </div>
+        <div className="flex gap-4 relative z-10">
+          <button 
+            onClick={() => setPage('wrong-review')} 
+            className="px-6 py-3 bg-teal-600 text-white rounded-2xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-200 whitespace-nowrap"
+          >
+            立即開始複習
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4 hover:shadow-md transition-shadow">
+          <div className="bg-sky-50 p-3 rounded-xl text-sky-600">
+            <BookCheck size={24} />
+          </div>
+          <div>
+            <p className="text-xs text-slate-400 font-bold mb-0.5">總題數</p>
+            <p className="text-2xl font-black text-slate-800 tracking-tight">{stats.total}</p>
+          </div>
+        </div>
+        
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4 hover:shadow-md transition-shadow">
+          <div className="bg-amber-50 p-3 rounded-xl text-amber-600">
+            <AlertCircle size={24} />
+          </div>
+          <div>
+            <p className="text-xs text-slate-400 font-bold mb-0.5">今日待複習</p>
+            <p className="text-2xl font-black text-slate-800 tracking-tight">{stats.needReview}</p>
+          </div>
+        </div>
+        
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4 hover:shadow-md transition-shadow">
+          <div className="bg-rose-50 p-3 rounded-xl text-rose-600">
+            <TrendingUp size={24} />
+          </div>
+          <div>
+            <p className="text-xs text-slate-400 font-bold mb-0.5">高頻錯題</p>
+            <p className="text-2xl font-black text-slate-800 tracking-tight">{stats.highError}</p>
+          </div>
+        </div>
+        
+        <div className="bg-emerald-600 p-4 rounded-2xl shadow-lg border border-emerald-500 flex items-center gap-4 transform hover:scale-[1.02] transition-all">
+          <div className="bg-white/20 p-3 rounded-xl text-white">
+            <Brain size={24} />
+          </div>
+          <div className="overflow-hidden">
+            <p className="text-xs text-emerald-100 font-bold mb-0.5 tracking-wider">核心弱點</p>
+            <p className="text-lg font-bold text-white truncate">{stats.topWeakness}</p>
+          </div>
+        </div>
+      </div>
+
       {/* Filter Bar */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div className="flex items-center gap-4 flex-wrap w-full lg:w-auto">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-bold text-slate-700 flex items-center gap-1">
-              <Filter size={16} className="text-indigo-500" />
+              <Filter size={16} className="text-teal-500" />
               類型：
             </span>
             {['all', '字音', '字形', '成語', '字詞義', '國學常識', '閱讀理解', '文言文'].map(type => (
@@ -160,9 +256,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ words, onEdit, token, refr
                   value={type} 
                   checked={filterType === type} 
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="accent-indigo-600"
+                  className="accent-teal-600"
                 />
-                <span className={filterType === type ? 'text-indigo-700 font-bold' : 'text-slate-600'}>
+                <span className={filterType === type ? 'text-teal-700 font-bold' : 'text-slate-600'}>
                   {type === 'all' ? '全部' : type}
                 </span>
               </label>
@@ -180,9 +276,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ words, onEdit, token, refr
                   value={source} 
                   checked={filterSources.includes(source)} 
                   onChange={() => handleSourceChange(source)}
-                  className="accent-indigo-600"
+                  className="accent-teal-600"
                 />
-                <span className={filterSources.includes(source) ? 'text-indigo-700 font-bold' : 'text-slate-600'}>
+                <span className={filterSources.includes(source) ? 'text-teal-700 font-bold' : 'text-slate-600'}>
                   {source}
                 </span>
               </label>
@@ -194,7 +290,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ words, onEdit, token, refr
                 placeholder="自訂來源..."
                 value={customSourceFilter}
                 onChange={(e) => setCustomSourceFilter(e.target.value)}
-                className="border border-slate-300 rounded-lg pl-8 pr-2 py-1 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                className="border border-slate-300 rounded-lg pl-8 pr-2 py-1 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
               />
             </div>
           </div>
@@ -204,7 +300,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ words, onEdit, token, refr
           <select 
             value={sortKey} 
             onChange={(e) => setSortKey(e.target.value)}
-            className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-slate-700"
+            className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white text-slate-700"
           >
             <option value="default">預設排序</option>
             <option value="id-desc">建立日期 (新→舊)</option>
@@ -218,15 +314,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ words, onEdit, token, refr
           <div className="flex border border-slate-300 rounded-lg overflow-hidden shadow-sm">
             <button 
               onClick={() => setCardSize('s')} 
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${cardSize === 's' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+              className={`px-3 py-1.5 text-xs font-medium transition-colors ${cardSize === 's' ? 'bg-teal-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
             >S</button>
             <button 
               onClick={() => setCardSize('m')} 
-              className={`px-3 py-1.5 text-xs font-medium border-l border-r border-slate-300 transition-colors ${cardSize === 'm' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+              className={`px-3 py-1.5 text-xs font-medium border-l border-r border-slate-300 transition-colors ${cardSize === 'm' ? 'bg-teal-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
             >M</button>
             <button 
               onClick={() => setCardSize('l')} 
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${cardSize === 'l' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+              className={`px-3 py-1.5 text-xs font-medium transition-colors ${cardSize === 'l' ? 'bg-teal-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
             >L</button>
           </div>
 
@@ -235,13 +331,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ words, onEdit, token, refr
           <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
             <button 
               onClick={() => setViewMode('card')} 
-              className={`p-1.5 rounded-md transition-all ${viewMode === 'card' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`p-1.5 rounded-md transition-all ${viewMode === 'card' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
               <LayoutGrid size={18} />
             </button>
             <button 
               onClick={() => setViewMode('table')} 
-              className={`p-1.5 rounded-md transition-all ${viewMode === 'table' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`p-1.5 rounded-md transition-all ${viewMode === 'table' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
               <List size={18} />
             </button>
@@ -267,7 +363,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ words, onEdit, token, refr
                       type="checkbox" 
                       onChange={handleSelectAll} 
                       checked={filteredWords.length > 0 && selectedIds.size === filteredWords.length}
-                      className="accent-indigo-600 w-4 h-4"
+                      className="accent-teal-600 w-4 h-4"
                     />
                   </th>
                   <th className="p-4 text-left text-sm font-bold text-slate-600 uppercase tracking-wider">字詞</th>
@@ -286,7 +382,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ words, onEdit, token, refr
                         type="checkbox" 
                         checked={selectedIds.has(word.ID)} 
                         onChange={() => handleSelect(word.ID)}
-                        className="accent-indigo-600 w-4 h-4"
+                        className="accent-teal-600 w-4 h-4"
                       />
                     </td>
                     <td className="p-4 text-sm text-slate-900 font-medium">{word.字詞}</td>
@@ -312,45 +408,46 @@ export const Dashboard: React.FC<DashboardProps> = ({ words, onEdit, token, refr
       )}
 
       {/* Bulk Edit Bar */}
-      <div className={`fixed bottom-0 left-0 w-full bg-slate-900 text-white p-4 flex flex-col sm:flex-row justify-between items-center shadow-lg transition-transform transform duration-300 z-50 ${selectedIds.size > 0 ? 'translate-y-0' : 'translate-y-full'}`}>
-        <div className="font-bold text-lg flex items-center gap-2 mb-2 sm:mb-0">
-          <span className="bg-indigo-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
+      <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-4xl bg-white/80 backdrop-blur-xl border border-slate-200 text-slate-800 p-4 rounded-3xl flex flex-col sm:flex-row justify-between items-center shadow-2xl transition-all transform duration-500 z-50 ${selectedIds.size > 0 ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
+        <div className="font-bold text-lg flex items-center gap-3 mb-2 sm:mb-0">
+          <span className="bg-teal-600 text-white px-3 py-1 rounded-full flex items-center justify-center text-sm shadow-lg shadow-teal-200">
             {selectedIds.size}
           </span>
-          筆資料已選取
+          <span className="text-slate-600">筆資料已選取</span>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-slate-300 text-sm">修改來源：</span>
+            <span className="text-slate-400 text-sm font-medium">修改來源：</span>
             <select 
               value={bulkSource} 
               onChange={(e) => setBulkSource(e.target.value)}
-              className="bg-slate-800 text-white border border-slate-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+              className="bg-slate-50 text-slate-800 border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm font-medium"
             >
               <option value="" disabled>請選擇...</option>
               <option value="自建">自建</option>
               <option value="會考">會考</option>
               <option value="學校">學校</option>
+              <option value="AI 辨識">AI 辨識</option>
             </select>
           </div>
           <button 
             onClick={handleBulkUpdate} 
             disabled={isUpdating}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-1.5 rounded-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-indigo-900/50"
+            className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-1.5 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-teal-200"
           >
-            {isUpdating ? '更新中...' : '更新'}
+            {isUpdating ? '更新中...' : '批次更新'}
           </button>
           <button 
             onClick={handleBulkDelete} 
             disabled={isUpdating}
-            className="bg-rose-600 hover:bg-rose-500 text-white px-4 py-1.5 rounded-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-rose-900/50 flex items-center gap-2"
+            className="bg-rose-50 hover:bg-rose-100 text-rose-600 px-4 py-1.5 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
           >
             <Trash2 size={16} />
             刪除
           </button>
           <button 
             onClick={() => setSelectedIds(new Set())} 
-            className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-1.5 rounded-lg transition-colors"
+            className="text-slate-400 hover:text-slate-600 px-4 py-1.5 font-bold transition-colors"
           >
             取消
           </button>

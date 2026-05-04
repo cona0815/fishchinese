@@ -3,4 +3,17 @@
 @theme {
   --font-zhuyin: "ZCOOL KuaiLe", cursive;
   --font-sans: "Noto Sans TC", sans-serif;
+  
+  --color-primary: #06b6d4; /* teal-500 */
+  --color-primary-dark: #0891b2; /* teal-600 */
+  --color-primary-light: #ecfeff; /* teal-50 */
+  
+  --color-accent: #10b981; /* emerald-500 */
+  --color-accent-light: #f0fdf4; /* emerald-50 */
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50/50 text-slate-900;
+  }
 }

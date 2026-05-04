@@ -138,7 +138,7 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
           <p className="text-slate-500 text-lg mb-8">休息一下吧～</p>
           <button 
             onClick={onFinish}
-            className="px-8 py-3 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-500/30"
+            className="px-8 py-3 bg-teal-600 text-white rounded-full font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-500/30"
           >
             返回首頁
           </button>
@@ -149,13 +149,13 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
     return (
       <div className="max-w-md mx-auto p-6 bg-white rounded-3xl shadow-xl border border-slate-100 mt-10">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600">
+          <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-4 text-teal-600">
             <Settings size={32} />
           </div>
-          <h2 className="text-2xl font-bold text-slate-800">
+          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
             {mode === 'today' ? '今日複習設定' : '錯題複習設定'}
           </h2>
-          <p className="text-slate-500 mt-2">
+          <p className="text-slate-400 mt-2 font-medium">
             共 {eligibleWords.length} 題可複習
           </p>
         </div>
@@ -163,9 +163,9 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
         <div className="space-y-6">
           {/* Count Slider */}
           <div>
-            <label className="flex justify-between text-slate-700 font-bold mb-2">
+            <label className="flex justify-between text-slate-700 font-bold mb-3">
               <span>複習題數</span>
-              <span className="text-indigo-600">{config.count} 題</span>
+              <span className="text-teal-600 font-black">{config.count} 題</span>
             </label>
             <input
               type="range"
@@ -173,27 +173,23 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
               max={eligibleWords.length}
               value={config.count}
               onChange={(e) => setConfig({ ...config, count: parseInt(e.target.value) })}
-              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+              className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-teal-600"
             />
-            <div className="flex justify-between text-xs text-slate-400 mt-1">
-              <span>1</span>
-              <span>{eligibleWords.length}</span>
-            </div>
           </div>
 
-          {/* Category Filter (For Wrong Review, or Today if desired) */}
+          {/* Category Filter */}
           <div>
-            <label className="block text-slate-700 font-bold mb-2 flex items-center gap-2">
-              <Filter size={18} />
+            <label className="block text-slate-700 font-bold mb-3 flex items-center gap-2">
+              <Filter size={18} className="text-teal-500" />
               題目分類 (可複選)
             </label>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => toggleCategory('全部')}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                   config.categories.includes('全部')
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-teal-600 text-white shadow-lg shadow-teal-200'
+                    : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
                 }`}
               >
                 全部
@@ -202,10 +198,10 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
                 <button
                   key={cat}
                   onClick={() => toggleCategory(cat)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                     config.categories.includes(cat) && !config.categories.includes('全部')
-                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      ? 'bg-teal-600 text-white shadow-lg shadow-teal-200'
+                      : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
                   }`}
                 >
                   {cat}
@@ -214,20 +210,22 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
             </div>
           </div>
 
-          {/* Random Toggle (Mainly for Today) */}
+          {/* Random Toggle */}
           {mode === 'today' && (
-            <div className="flex items-center justify-between bg-slate-50 p-4 rounded-xl">
+            <div className="flex items-center justify-between bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
               <div className="flex items-center gap-3">
-                {config.isRandom ? <Shuffle className="text-indigo-600" /> : <SortDesc className="text-slate-400" />}
-                <span className="font-bold text-slate-700">隨機排序</span>
+                <div className={`p-2 rounded-lg ${config.isRandom ? 'bg-teal-100 text-teal-600' : 'bg-slate-100 text-slate-400'}`}>
+                  {config.isRandom ? <Shuffle size={18} /> : <SortDesc size={18} />}
+                </div>
+                <span className="font-bold text-slate-700">隨記排序</span>
               </div>
               <button
                 onClick={() => setConfig({ ...config, isRandom: !config.isRandom })}
                 className={`w-12 h-6 rounded-full transition-colors relative ${
-                  config.isRandom ? 'bg-indigo-600' : 'bg-slate-300'
+                  config.isRandom ? 'bg-teal-500' : 'bg-slate-200'
                 }`}
               >
-                <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform ${
+                <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform shadow-sm ${
                   config.isRandom ? 'left-7' : 'left-1'
                 }`} />
               </button>
@@ -236,10 +234,10 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
 
           <button
             onClick={startReview}
-            className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 mt-4"
+            className="w-full py-4 bg-teal-600 text-white rounded-2xl font-black text-lg hover:bg-teal-700 transition-all flex items-center justify-center gap-2 shadow-xl shadow-teal-200 mt-4 transform hover:scale-[1.02] active:scale-[0.98]"
           >
-            <Play fill="currentColor" />
-            開始複習
+            <Play fill="currentColor" size={20} />
+            開始深度複習
           </button>
         </div>
       </div>
@@ -259,7 +257,7 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
               setCurrentIndex(0);
               setIsFlipped(false);
             }}
-            className="px-6 py-3 bg-white text-indigo-600 border-2 border-indigo-100 rounded-full font-bold hover:bg-indigo-50 transition-all"
+            className="px-6 py-3 bg-white text-teal-600 border-2 border-teal-100 rounded-full font-bold hover:bg-teal-50 transition-all"
           >
             <span className="flex items-center gap-2">
               <RotateCcw size={20} />
@@ -268,7 +266,7 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
           </button>
           <button 
             onClick={onFinish}
-            className="px-8 py-3 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-500/30"
+            className="px-8 py-3 bg-teal-600 text-white rounded-full font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-500/30"
           >
             返回首頁
           </button>
@@ -292,55 +290,59 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
 
       <div 
         onClick={() => setIsFlipped(!isFlipped)}
-        className={`w-full min-h-[400px] bg-white rounded-3xl shadow-xl cursor-pointer transition-all duration-500 relative flex flex-col items-center justify-center p-8 md:p-12 border-2 ${isFlipped ? 'border-orange-400 bg-orange-50/50' : 'border-slate-100 hover:border-indigo-200 hover:shadow-2xl'}`}
+        className={`w-full min-h-[400px] bg-white rounded-[2rem] shadow-xl cursor-pointer transition-all duration-500 relative flex flex-col items-center justify-center p-8 md:p-12 border-2 ${isFlipped ? 'border-teal-200 bg-teal-50/30 shadow-teal-100' : 'border-white hover:border-teal-100 hover:shadow-2xl hover:shadow-teal-100/50'}`}
       >
         <div className="text-center w-full">
-          <div className={`font-bold text-slate-800 mb-6 transition-all duration-300 ${isFlipped ? 'text-2xl' : 'text-4xl md:text-5xl'}`}>
+          <div className={`font-black text-slate-800 mb-6 transition-all duration-300 tracking-tight ${isFlipped ? 'text-2xl' : 'text-5xl md:text-6xl'}`}>
             {currentWord.字詞}
           </div>
           
           {isFlipped ? (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 space-y-6">
               {currentWord.注音 && (
-                <div className="text-3xl font-serif text-orange-600 font-medium">
+                <div className="text-4xl font-serif text-teal-600 font-bold">
                   {currentWord.注音}
                 </div>
               )}
               
-              <div className="bg-white/60 p-6 rounded-xl border border-orange-100 text-slate-700 text-lg leading-relaxed text-left">
-                <span className="block font-bold text-orange-800 text-sm mb-2 uppercase tracking-wider">釋義</span>
+              <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-teal-100 text-slate-700 text-xl leading-relaxed text-left shadow-sm">
+                <span className="block font-black text-teal-700 text-xs mb-2 uppercase tracking-widest bg-teal-50 w-fit px-2 py-0.5 rounded">釋義</span>
                 {currentWord.釋義}
               </div>
 
               {currentWord.例句 && (
-                <div className="text-slate-600 text-left pl-4 border-l-4 border-emerald-400 italic">
+                <div className="text-slate-500 text-left pl-4 border-l-4 border-emerald-400 font-medium text-lg leading-relaxed">
                   {currentWord.例句}
                 </div>
               )}
             </div>
           ) : (
-            <div className="text-slate-400 text-sm mt-12 animate-pulse flex flex-col items-center gap-2">
-              <span className="w-12 h-1 bg-slate-200 rounded-full"></span>
-              <span>思考一下...</span>
+            <div className="text-slate-300 text-sm mt-12 animate-pulse flex flex-col items-center gap-3">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 bg-teal-200 rounded-full"></div>
+                <div className="w-2 h-2 bg-teal-300 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-teal-200 rounded-full"></div>
+              </div>
+              <span className="font-bold tracking-widest text-teal-400/50">想一下正確解答...</span>
             </div>
           )}
         </div>
       </div>
 
-      <div className={`flex gap-4 md:gap-8 mt-8 w-full justify-center transition-all duration-300 ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+      <div className={`flex gap-4 md:gap-8 mt-12 w-full justify-center transition-all duration-300 ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
         <button 
           onClick={(e) => { e.stopPropagation(); handleAnswer(false); }}
-          className="flex-1 max-w-[160px] py-4 rounded-2xl bg-white border-2 border-rose-100 text-rose-500 font-bold hover:bg-rose-50 hover:border-rose-200 hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-sm"
+          className="flex-1 max-w-[200px] py-5 rounded-2xl bg-white border border-slate-200 text-slate-400 font-bold hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all flex items-center justify-center gap-3 shadow-sm group"
         >
-          <XCircle size={24} />
-          <span>忘了 😣</span>
+          <XCircle size={28} className="group-hover:animate-shake" />
+          <span className="text-lg">忘了</span>
         </button>
         <button 
           onClick={(e) => { e.stopPropagation(); handleAnswer(true); }}
-          className="flex-1 max-w-[160px] py-4 rounded-2xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30"
+          className="flex-1 max-w-[200px] py-5 rounded-2xl bg-teal-600 text-white font-black text-lg hover:bg-teal-700 hover:scale-105 transition-all flex items-center justify-center gap-3 shadow-xl shadow-teal-200"
         >
-          <CheckCircle size={24} />
-          <span>記得 😎</span>
+          <CheckCircle size={28} />
+          <span>記得</span>
         </button>
       </div>
     </div>

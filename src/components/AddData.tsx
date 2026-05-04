@@ -42,13 +42,13 @@ const SourceSelector: React.FC<{
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setIsOpen(true)}
-          className="w-full p-2 pr-8 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-800 placeholder-slate-400"
+          className="w-full p-2 pr-8 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all text-slate-800 placeholder-slate-400"
           placeholder="輸入或選擇來源..."
         />
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-500 transition-colors"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-teal-500 transition-colors"
         >
           <ChevronDown size={16} />
         </button>
@@ -59,7 +59,7 @@ const SourceSelector: React.FC<{
           {filteredOptions.map((option, index) => (
             <div
               key={index}
-              className="px-4 py-2 hover:bg-indigo-50 cursor-pointer text-slate-700 hover:text-indigo-700 transition-colors"
+              className="px-4 py-2 hover:bg-teal-50 cursor-pointer text-slate-700 hover:text-teal-700 transition-colors"
               onClick={() => {
                 onChange(option);
                 setIsOpen(false);
@@ -224,7 +224,7 @@ export const AddData: React.FC<AddDataProps> = ({ token, onSuccess, initialData,
       }
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: { parts: parts },
         config: {
           tools: [{ googleSearch: {} }],
@@ -320,45 +320,51 @@ export const AddData: React.FC<AddDataProps> = ({ token, onSuccess, initialData,
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-6">
-      <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-        <Sparkles className="text-indigo-600" />
-        {initialData ? '編輯題目' : '新增錯題題源'}
-      </h2>
+    <div className="max-w-4xl mx-auto p-4 md:p-6 pb-20">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-3xl font-black text-slate-800 flex items-center gap-3 tracking-tight">
+          <div className="bg-teal-100 p-2 rounded-2xl">
+            <Sparkles className="text-teal-600" size={28} />
+          </div>
+          {initialData ? '編輯題目' : '新增錯題題源'}
+        </h2>
+      </div>
 
       {/* Input Section */}
       {status === 'idle' || status === 'analyzing' || status === 'error' ? (
         <div className="space-y-6">
           {/* Text Input Area */}
-          <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
-            <label className="block text-slate-700 font-bold mb-3">
-              輸入文字或文章 (支援貼上圖片 Ctrl+V)
+          <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 italic transition-all">
+            <label className="block text-slate-800 font-black mb-4 flex items-center gap-2">
+              <FileText size={20} className="text-teal-500" />
+              貼上題目或文章內容 (支援 Ctrl+V 圖片)
             </label>
             <textarea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onPaste={handlePaste}
-              placeholder="請貼上國文題目或文章..."
-              className="w-full h-40 p-4 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none bg-slate-50"
+              placeholder="請直接貼上國文考題文字... AI 將自動解析並歸位。"
+              className="w-full h-48 p-6 border border-slate-100 rounded-3xl focus:outline-none focus:ring-4 focus:ring-teal-50 focus:border-teal-400 resize-none bg-slate-50/50 transition-all text-slate-700 leading-relaxed font-serif text-lg"
               disabled={status === 'analyzing'}
             />
           </div>
 
           {/* File Upload Area */}
-          <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
-            <label className="block text-slate-700 font-bold mb-3">
-              或上傳圖片/PDF
+          <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
+            <label className="block text-slate-800 font-black mb-4 flex items-center gap-2">
+              <ImageIcon size={20} className="text-emerald-500" />
+              或者是拍攝考題照片
             </label>
             
             {!selectedFile ? (
               <div 
-                className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                className="grid grid-cols-1 md:grid-cols-2 gap-8"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleDrop}
               >
                 <div 
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition-colors h-48 group"
+                  className="border-4 border-dashed border-slate-100 rounded-[2rem] p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-teal-50/50 hover:border-teal-200 transition-all h-64 group bg-slate-50/20"
                 >
                   <input 
                     type="file" 
@@ -367,84 +373,86 @@ export const AddData: React.FC<AddDataProps> = ({ token, onSuccess, initialData,
                     className="hidden" 
                     accept="image/*,application/pdf"
                   />
-                  <div className="bg-indigo-100 p-3 rounded-full mb-3 group-hover:bg-indigo-200 transition-colors">
-                    <FileText className="text-indigo-600 w-8 h-8" />
+                  <div className="bg-white p-5 rounded-3xl mb-4 group-hover:scale-110 transition-transform shadow-sm group-hover:shadow-teal-100">
+                    <Upload className="text-teal-600 w-8 h-8" />
                   </div>
-                  <span className="text-slate-600 font-medium">選擇檔案</span>
-                  <span className="text-slate-400 text-sm mt-1">.jpg, .png, .pdf</span>
+                  <span className="text-slate-800 font-black tracking-tight">匯入本機檔案</span>
+                  <span className="text-slate-400 text-[10px] mt-2 font-black uppercase tracking-widest bg-white px-3 py-1 rounded-full shadow-sm">JPG / PNG / PDF</span>
                 </div>
 
                 <div 
-                  className="border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition-colors h-48 group"
-                  onClick={() => fileInputRef.current?.click()} // For now, camera button also triggers file select (mobile will show camera option)
+                  className="border-4 border-dashed border-slate-100 rounded-[2rem] p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-emerald-50/50 hover:border-emerald-200 transition-all h-64 group bg-slate-50/20"
+                  onClick={() => fileInputRef.current?.click()}
                 >
-                  <div className="bg-indigo-100 p-3 rounded-full mb-3 group-hover:bg-indigo-200 transition-colors">
-                    <Camera className="text-indigo-600 w-8 h-8" />
+                  <div className="bg-white p-5 rounded-3xl mb-4 group-hover:scale-110 transition-transform shadow-sm group-hover:shadow-emerald-100">
+                    <Camera className="text-emerald-600 w-8 h-8" />
                   </div>
-                  <span className="text-slate-600 font-medium">相機拍照</span>
-                  <span className="text-slate-400 text-sm mt-1">手機/平板適用</span>
+                  <span className="text-slate-800 font-black tracking-tight">啟動相機掃描</span>
+                  <span className="text-slate-400 text-[10px] mt-2 font-black uppercase tracking-widest bg-white px-3 py-1 rounded-full shadow-sm">直接拍攝紙本錯題</span>
                 </div>
               </div>
             ) : (
-              <div className="space-y-4">
-                <div className="relative border border-slate-200 rounded-xl p-4 flex items-center gap-4 bg-slate-50">
+              <div className="space-y-8">
+                <div className="relative border border-slate-100 rounded-[2rem] p-8 flex items-center gap-8 bg-slate-50/50 group overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-teal-500"></div>
                   {previewUrl ? (
-                    <img src={previewUrl} alt="Preview" className="w-20 h-20 object-cover rounded-lg shadow-sm" />
+                    <img src={previewUrl} alt="Preview" className="w-28 h-28 object-cover rounded-2xl shadow-xl border-4 border-white transform rotate-3" />
                   ) : (
-                    <div className="w-20 h-20 bg-slate-200 rounded-lg flex items-center justify-center">
-                      <FileText className="text-slate-400" />
+                    <div className="w-28 h-28 bg-white rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3">
+                      <FileText className="text-slate-200" size={32} />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-slate-800 truncate">{selectedFile.name}</p>
-                    <p className="text-sm text-slate-500">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                    <p className="font-black text-slate-800 truncate text-xl tracking-tight">{selectedFile.name}</p>
+                    <p className="text-xs text-slate-400 font-black uppercase tracking-widest mt-1">{(selectedFile.size / 1024).toFixed(1)} KB READY</p>
                   </div>
                   <button 
                     onClick={clearFile}
-                    className="p-2 hover:bg-slate-200 rounded-full transition-colors"
+                    className="p-4 bg-white hover:bg-rose-50 hover:text-rose-600 rounded-2xl transition-all text-slate-300 shadow-sm border border-slate-100"
                   >
-                    <X className="text-slate-500" size={20} />
+                    <X size={20} />
                   </button>
                 </div>
 
-                {/* Question Numbers Input (Only shown when file is selected) */}
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1">
-                    指定錯題題號 (選填)
+                <div className="bg-slate-50 p-6 rounded-[1.5rem]">
+                  <label className="block text-[10px] font-black text-slate-400 mb-3 uppercase tracking-[0.2em] ml-1">
+                    指定特定題號 (可留空，AI 將自動辨認錯題)
                   </label>
                   <input
                     type="text"
                     value={questionNumbers}
                     onChange={(e) => setQuestionNumbers(e.target.value)}
-                    placeholder="例如：3, 8, 12 (若不填寫，AI 將自動偵測錯題標記)"
-                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-slate-400"
+                    placeholder="例如：3, 8, 12"
+                    className="w-full p-5 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-teal-50 outline-none transition-all placeholder-slate-300 font-black text-lg text-slate-700"
                   />
-                  <p className="text-xs text-slate-500 mt-1">
-                    若圖片中包含多題，可在此指定要分析的題號，AI 會更精準。
-                  </p>
                 </div>
               </div>
             )}
           </div>
 
           {/* Action Button */}
-          <button
-            onClick={handleAnalyze}
-            disabled={status === 'analyzing' || (!inputText && !selectedFile)}
-            className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-200"
-          >
-            {status === 'analyzing' ? (
-              <>
-                <Loader2 className="animate-spin" />
-                AI 分析中...
-              </>
-            ) : (
-              <>
-                <Sparkles />
-                開始分析
-              </>
-            )}
-          </button>
+          <div className="pt-4">
+            <button
+              onClick={handleAnalyze}
+              disabled={status === 'analyzing' || (!inputText && !selectedFile)}
+              className="w-full py-6 bg-teal-600 text-white rounded-[2rem] font-black text-xl hover:bg-teal-700 disabled:opacity-30 disabled:grayscale transition-all flex items-center justify-center gap-3 shadow-2xl shadow-teal-100 transform active:scale-95"
+            >
+              {status === 'analyzing' ? (
+                <>
+                  <Loader2 className="animate-spin" size={28} />
+                  正在深度解析錯題脈絡...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={24} />
+                  啟動 AI 錯題分析
+                </>
+              )}
+            </button>
+            <p className="text-center text-slate-300 font-black text-[10px] mt-6 uppercase tracking-[0.2em]">
+              Powered by Gemini Vision Intelligence
+            </p>
+          </div>
           
           {message && status === 'error' && (
             <div className="p-4 bg-red-50 text-red-600 rounded-xl text-center border border-red-100">
@@ -487,7 +495,7 @@ export const AddData: React.FC<AddDataProps> = ({ token, onSuccess, initialData,
                 {/* Card Header */}
                 <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">
+                    <span className="bg-teal-100 text-teal-700 px-2 py-1 rounded text-xs font-bold">
                       #{index + 1}
                     </span>
                     <span className="font-bold text-slate-700">
@@ -514,7 +522,7 @@ export const AddData: React.FC<AddDataProps> = ({ token, onSuccess, initialData,
                     <input
                       value={item['字詞'] || ''}
                       onChange={(e) => handleDataChange(index, '字詞', e.target.value)}
-                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                     />
                   </div>
                   <div>
@@ -524,7 +532,7 @@ export const AddData: React.FC<AddDataProps> = ({ token, onSuccess, initialData,
                     <input
                       value={item['注音'] || ''}
                       onChange={(e) => handleDataChange(index, '注音', e.target.value)}
-                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                     />
                   </div>
                   <div>
@@ -532,7 +540,7 @@ export const AddData: React.FC<AddDataProps> = ({ token, onSuccess, initialData,
                     <input
                       value={item['錯誤類型'] || ''}
                       onChange={(e) => handleDataChange(index, '錯誤類型', e.target.value)}
-                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                     />
                   </div>
                   <div>
@@ -542,7 +550,7 @@ export const AddData: React.FC<AddDataProps> = ({ token, onSuccess, initialData,
                     <input
                       value={item['考點'] || ''}
                       onChange={(e) => handleDataChange(index, '考點', e.target.value)}
-                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -552,7 +560,7 @@ export const AddData: React.FC<AddDataProps> = ({ token, onSuccess, initialData,
                     <textarea
                       value={item['釋義'] || ''}
                       onChange={(e) => handleDataChange(index, '釋義', e.target.value)}
-                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                       rows={['國學常識', '閱讀理解', '文言文'].includes(item['錯誤類型'] || '') ? 6 : 2}
                     />
                   </div>
@@ -563,7 +571,7 @@ export const AddData: React.FC<AddDataProps> = ({ token, onSuccess, initialData,
                     <textarea
                       value={item['例句'] || ''}
                       onChange={(e) => handleDataChange(index, '例句', e.target.value)}
-                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                       rows={['國學常識', '閱讀理解', '文言文'].includes(item['錯誤類型'] || '') ? 4 : 2}
                     />
                   </div>
@@ -574,7 +582,7 @@ export const AddData: React.FC<AddDataProps> = ({ token, onSuccess, initialData,
                     <textarea
                       value={item['詳情'] || ''}
                       onChange={(e) => handleDataChange(index, '詳情', e.target.value)}
-                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                       rows={['國學常識', '閱讀理解', '文言文'].includes(item['錯誤類型'] || '') ? 4 : 2}
                     />
                   </div>

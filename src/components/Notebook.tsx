@@ -107,7 +107,7 @@ export const Notebook: React.FC<NotebookProps> = ({ words }) => {
       `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: prompt,
       });
 
@@ -130,14 +130,14 @@ export const Notebook: React.FC<NotebookProps> = ({ words }) => {
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8">
-      <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 md:p-12">
+      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-8 md:p-12">
         <div className="text-center mb-10">
-          <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6 text-indigo-600">
+          <div className="w-20 h-20 bg-teal-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-teal-600">
             <Brain size={40} />
           </div>
-          <h1 className="text-3xl font-bold text-slate-800 mb-4">AI 弱點分析 Notebook</h1>
-          <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-            讓 AI 老師分析你的所有錯題，找出你的學習盲點，並提供專屬的複習建議。
+          <h1 className="text-3xl font-black text-slate-800 mb-4 tracking-tight">AI 弱點分析精靈</h1>
+          <p className="text-slate-500 text-lg max-w-2xl mx-auto font-medium">
+            讓 AI 深度分析你的錯題分佈，精準找出學習死角，並產出專屬複習指引。
           </p>
         </div>
 
@@ -145,87 +145,90 @@ export const Notebook: React.FC<NotebookProps> = ({ words }) => {
           <div className="flex justify-center">
             <button
               onClick={handleAnalyze}
-              className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-all flex items-center gap-3 shadow-lg shadow-indigo-200 hover:scale-105"
+              className="px-10 py-4 bg-teal-600 text-white rounded-2xl font-black text-lg hover:bg-teal-700 transition-all flex items-center gap-3 shadow-xl shadow-teal-100 transform hover:scale-105 active:scale-95"
             >
               <Sparkles size={24} />
-              開始分析我的錯題
+              產出我的專屬弱點分析
             </button>
           </div>
         )}
 
         {isAnalyzing && (
-          <div className="flex flex-col items-center justify-center py-12 space-y-6">
-            <Loader2 size={48} className="text-indigo-600 animate-spin" />
-            <div className="text-xl font-bold text-slate-700 animate-pulse">
-              AI 老師正在仔細研究你的錯題...
+          <div className="flex flex-col items-center justify-center py-16 space-y-8">
+            <div className="relative">
+              <div className="w-20 h-20 border-4 border-teal-100 rounded-full animate-pulse"></div>
+              <Loader2 size={40} className="text-teal-600 animate-spin absolute inset-0 m-auto" />
             </div>
-            <p className="text-slate-500">這可能需要幾秒鐘的時間</p>
+            <div className="text-2xl font-black text-slate-800 tracking-tight">
+              AI 老師正在調閱檔案中...
+            </div>
+            <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">分析中，請稍候片刻</p>
           </div>
         )}
 
         {error && (
-          <div className="mt-8 p-6 bg-red-50 text-red-600 rounded-2xl border border-red-100 text-center font-medium">
+          <div className="mt-8 p-6 bg-rose-50 text-rose-600 rounded-3xl border border-rose-100 text-center font-bold shadow-sm shadow-rose-50">
             {error}
           </div>
         )}
 
         {analysis && !isAnalyzing && (
           <div className="mt-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <div className="bg-slate-50 rounded-2xl p-8 md:p-10 border border-slate-200">
-              <div className="flex items-center gap-3 mb-6 pb-6 border-b border-slate-200">
-                <BookOpen className="text-indigo-600" size={28} />
-                <h2 className="text-2xl font-bold text-slate-800">專屬學習診斷報告</h2>
+            <div className="bg-slate-50/50 rounded-3xl p-8 md:p-12 border border-slate-100 shadow-inner">
+              <div className="flex items-center gap-3 mb-8 pb-6 border-b border-slate-200/50">
+                <BookOpen className="text-teal-600" size={32} />
+                <h2 className="text-2xl font-black text-slate-800 tracking-tight">專屬學習診斷報告</h2>
               </div>
-              <div className="prose prose-slate prose-indigo max-w-none prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl prose-p:text-slate-700 prose-li:text-slate-700">
+              <div className="prose prose-slate prose-teal max-w-none prose-headings:font-black prose-p:text-slate-600 prose-p:font-medium prose-p:leading-relaxed prose-strong:text-teal-700 prose-strong:font-black">
                 <Markdown>{analysis}</Markdown>
               </div>
             </div>
             
-            <div className="mt-8 flex justify-center">
+            <div className="mt-10 flex justify-center">
               <button
                 onClick={handleAnalyze}
-                className="px-6 py-3 bg-white text-indigo-600 border-2 border-indigo-100 rounded-xl font-bold hover:bg-indigo-50 transition-all flex items-center gap-2"
+                className="px-8 py-3 bg-white text-teal-600 border-2 border-teal-100 rounded-2xl font-black hover:bg-teal-50 transition-all flex items-center gap-2 shadow-sm"
               >
-                <Sparkles size={18} />
-                重新分析
+                <Sparkles size={20} />
+                重新分析弱點
               </button>
             </div>
           </div>
         )}
 
         {/* NotebookLM Prompts Section */}
-        <div className="mt-16 pt-12 border-t border-slate-200">
-          <div className="text-center mb-10">
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 text-emerald-600">
+        <div className="mt-20 pt-16 border-t border-slate-100">
+          <div className="text-center mb-12">
+            <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-emerald-600">
               <MessageSquareText size={32} />
             </div>
-            <h2 className="text-2xl font-bold text-slate-800 mb-3">進階應用：NotebookLM 專屬家教</h2>
-            <p className="text-slate-500 max-w-2xl mx-auto">
-              將錯題匯出成 PDF 後，上傳到 Google NotebookLM 作為來源，<br className="hidden sm:block" />
-              再複製以下提示詞（Prompt）貼給 AI，讓它成為你的專屬國文家教！
+            <h2 className="text-2xl font-black text-slate-800 mb-4 tracking-tight">進化應用：NotebookLM 數位家教</h2>
+            <p className="text-slate-500 max-w-2xl mx-auto font-medium">
+              將匯出的 PDF 錯題本上傳至 <span className="text-teal-600 font-bold underline underline-offset-4 decoration-teal-200">NotebookLM</span>，<br className="hidden sm:block" />
+              搭配以下 AI 提示詞，瞬間獲得一位對你瞭若指掌的專屬老師。
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 gap-8">
             {NOTEBOOK_LM_PROMPTS.map((item) => (
-              <div key={item.id} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <div key={item.id} className="bg-white border border-slate-100 rounded-3xl p-8 shadow-sm hover:shadow-xl hover:shadow-teal-100/30 transition-all transform hover:-translate-y-1">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-6">
                   <div>
-                    <h3 className="text-lg font-bold text-slate-800">{item.title}</h3>
-                    <p className="text-sm text-slate-500 mt-1">{item.description}</p>
+                    <h3 className="text-xl font-black text-slate-800 leading-tight">{item.title}</h3>
+                    <p className="text-slate-500 mt-2 font-medium">{item.description}</p>
                   </div>
                   <button
                     onClick={() => handleCopy(item.id, item.prompt)}
-                    className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors sm:w-auto w-full ${
+                    className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black transition-all sm:w-auto w-full shadow-sm ${
                       copiedId === item.id 
-                        ? 'bg-emerald-100 text-emerald-700' 
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        ? 'bg-emerald-600 text-white shadow-emerald-200 shadow-xl' 
+                        : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
                     }`}
                   >
                     {copiedId === item.id ? (
                       <>
                         <CheckCircle2 size={18} />
-                        <span>已複製</span>
+                        <span>複製成功</span>
                       </>
                     ) : (
                       <>
@@ -235,8 +238,8 @@ export const Notebook: React.FC<NotebookProps> = ({ words }) => {
                     )}
                   </button>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                  <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans leading-relaxed">
+                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                  <pre className="text-sm text-slate-600 whitespace-pre-wrap font-sans leading-relaxed font-medium italic">
                     {item.prompt}
                   </pre>
                 </div>

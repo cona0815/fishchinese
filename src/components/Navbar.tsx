@@ -18,15 +18,17 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, setPage }) => {
   ];
 
   return (
-    <nav className="bg-slate-900 text-white p-4 flex flex-wrap items-center gap-4 shadow-md sticky top-0 z-50">
-      <div className="text-xl font-bold mr-4 hidden md:block text-indigo-400">國文錯題本</div>
+    <nav className="bg-white/80 backdrop-blur-md border-b border-slate-100 text-slate-800 p-4 flex flex-wrap items-center gap-4 shadow-sm sticky top-0 z-50">
+      <div className="text-xl font-black mr-4 hidden md:block bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent tracking-tight">國文錯題本</div>
       
       {navItems.map((item) => (
         <button
           key={item.id}
           onClick={() => setPage(item.id)}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm md:text-base ${
-            currentPage === item.id ? 'bg-indigo-600 text-white font-bold shadow-lg shadow-indigo-900/50' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+          className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all text-sm md:text-base font-medium ${
+            currentPage === item.id 
+              ? 'bg-teal-50 text-teal-600 shadow-sm border border-teal-100' 
+              : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
           }`}
         >
           <item.icon size={18} />
@@ -37,8 +39,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, setPage }) => {
       <div className="ml-auto flex items-center gap-2">
         <button
           onClick={() => setPage('guide')}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-            currentPage === 'guide' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+          className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all ${
+            currentPage === 'guide' ? 'bg-slate-100 text-slate-800' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
           }`}
           title="功能說明"
         >
@@ -46,8 +48,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, setPage }) => {
         </button>
         <button
           onClick={() => setPage('settings')}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-            currentPage === 'settings' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+          className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all ${
+            currentPage === 'settings' ? 'bg-slate-100 text-slate-800' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
           }`}
           title="設定"
         >

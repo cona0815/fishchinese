@@ -11,6 +11,8 @@ import { CreateExam } from './components/CreateExam';
 import { Word } from './types';
 import { api } from './services/api';
 
+import { CheckCircle, XCircle } from 'lucide-react';
+
 export default function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [words, setWords] = useState<Word[]>([]);
@@ -71,24 +73,25 @@ export default function App() {
     if (loading) {
       return (
         <div className="flex flex-col items-center justify-center min-h-[50vh]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-          <p className="text-slate-500 font-medium">正在同步雲端資料...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-teal-600 border-t-transparent mb-6 shadow-xl shadow-teal-100"></div>
+          <p className="text-slate-400 font-black tracking-widest text-sm uppercase">正在同步雲端資料...</p>
         </div>
       );
     }
 
     if (error && currentPage === 'dashboard') {
       return (
-        <div className="text-center p-10">
-          <div className="text-rose-500 text-xl mb-4 font-bold flex items-center justify-center gap-2">
-            ⚠️ 連線錯誤
+        <div className="text-center p-12 bg-white rounded-[2.5rem] shadow-xl border border-slate-100 max-w-lg mx-auto mt-10">
+          <div className="w-20 h-20 bg-rose-100 rounded-3xl flex items-center justify-center mx-auto mb-6 text-rose-500">
+            <XCircle size={40} />
           </div>
-          <p className="text-slate-600 mb-6">{error}</p>
+          <h2 className="text-2xl font-black text-slate-800 mb-4 tracking-tight">連線發生錯誤</h2>
+          <p className="text-slate-500 mb-8 font-medium leading-relaxed">{error}</p>
           <button 
             onClick={() => fetchData()}
-            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/30"
+            className="px-8 py-3 bg-teal-600 text-white rounded-2xl font-black hover:bg-teal-700 transition-all shadow-xl shadow-teal-200 transform hover:scale-105 active:scale-95"
           >
-            重試
+            重試連線
           </button>
         </div>
       );
@@ -102,6 +105,7 @@ export default function App() {
             onEdit={handleEdit} 
             token="" 
             refreshData={fetchData} 
+            setPage={setCurrentPage}
           />
         );
       case 'today-review':
@@ -152,7 +156,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-teal-100 selection:text-teal-900">
       <Navbar 
         currentPage={currentPage} 
         setPage={setCurrentPage} 
