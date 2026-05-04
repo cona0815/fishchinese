@@ -283,42 +283,152 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
 
       {/* Preview Area */}
       {showPreview && (
-        <div className="bg-white shadow-xl min-h-[297mm] w-full max-w-[210mm] mx-auto p-10 md:p-16 print:p-0 print:shadow-none print:w-full print:max-w-none">
-          {/* Header */}
-          <div className="text-center border-b-2 border-black pb-6 mb-8">
-            <h1 className="text-3xl font-serif font-bold mb-4 tracking-widest">國文錯題複習卷</h1>
-            <div className="flex justify-between text-base font-serif text-slate-900 px-4">
-              <div className="space-x-8">
-                <span>班級：__________</span>
-                <span>姓名：__________</span>
-                <span>座號：__________</span>
+        <div className="max-w-5xl mx-auto p-4 md:p-8 fixed inset-0 z-50 bg-slate-50/95 backdrop-blur-sm overflow-y-auto print:static print:bg-white print:p-0 print:m-0 scrollbar-none">
+          {/* Controls - Hidden when printing */}
+          <div className="max-w-4xl mx-auto mb-8 print:hidden flex flex-col sm:flex-row justify-between items-center gap-6 bg-white p-6 rounded-3xl shadow-xl mt-8">
+            <button 
+              onClick={() => setShowPreview(false)}
+              className="flex items-center gap-2 text-slate-400 font-black hover:text-teal-600 transition-all group"
+            >
+              <div className="p-2 bg-slate-50 group-hover:bg-teal-50 rounded-xl transition-colors">
+                <ChevronLeft size={20} />
               </div>
-              <div className="text-slate-500 text-sm">
-                {quizMode === 'teacher' ? '教師版 (含解答)' : '學生版'}
+              返回設定
+            </button>
+            
+            <div className="flex gap-4 items-center">
+              <div className="flex bg-slate-100 p-1 rounded-2xl">
+                <button
+                  onClick={() => setQuizMode('student')}
+                  className={`px-6 py-2 text-xs font-black rounded-xl transition-all ${
+                    quizMode === 'student' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-400'
+                  }`}
+                >
+                  學生模式
+                </button>
+                <button
+                  onClick={() => setQuizMode('teacher')}
+                  className={`px-6 py-2 text-xs font-black rounded-xl transition-all ${
+                    quizMode === 'teacher' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-400'
+                  }`}
+                >
+                  教師解答
+                </button>
               </div>
+              
+              <button 
+                onClick={handlePrint}
+                className="flex items-center gap-2 px-8 py-2.5 bg-teal-600 text-white rounded-2xl hover:bg-teal-700 transition-all font-black shadow-lg shadow-teal-100"
+              >
+                <Printer size={18} />
+                列印 / 儲存 PDF
+              </button>
             </div>
           </div>
 
-          {/* Content Table */}
-          <div className="w-full">
-            <table className="w-full border-collapse border border-slate-300 text-base">
-              <thead>
-                <tr className="bg-slate-100 print:bg-gray-100 border-b border-slate-300">
-                  <th className="p-2 border-r border-slate-300 w-12">題號</th>
-                  <th className="p-2 border-r border-slate-300 text-left">題目</th>
-                  <th className="p-2 border-r border-slate-300 w-1/4 text-left">作答區 / 答案</th>
-                  <th className="p-2 w-1/3">訂正</th>
-                </tr>
-              </thead>
-              <tbody>
-                {renderRows(quizData, 1)}
-              </tbody>
-            </table>
-          </div>
+          {/* Paginated Paper Content */}
+          <div className="space-y-8 print:space-y-0">
+            {(() => {
+              const QUESTIONS_PER_PAGE = 15;
+              const totalPages = Math.ceil(quizData.length / QUESTIONS_PER_PAGE);
+              
+              return Array.from({ length: totalPages }).map((_, pageIndex) => (
+                <div 
+                  key={pageIndex}
+                  className="bg-white shadow-2xl min-h-[297mm] w-full max-w-[210mm] mx-auto p-12 md:p-20 print:p-8 print:shadow-none print:w-full print:max-w-none rounded-[2.5rem] print:rounded-none overflow-hidden relative flex flex-col print:break-after-page mb-8 print:mb-0"
+                >
+                  {/* Header */}
+                  <div className="text-center border-b-4 border-slate-800 pb-10 mb-12">
+                    <h1 className="text-4xl font-serif font-black mb-6 tracking-[0.3em] text-slate-900 uppercase">國語文能力診斷練習卷</h1>
+                    <div className="flex justify-between items-end text-lg font-serif text-slate-800 px-6">
+                      <div className="space-x-12 flex items-center">
+                        <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[100px]">班級：</span>
+                        <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[120px]">姓名：</span>
+                        <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[80px]">座號：</span>
+                      </div>
+                      <div className="px-4 py-1.5 bg-slate-100 rounded-lg text-[10px] font-black text-slate-500 tracking-widest uppercase">
+                        {quizMode === 'teacher' ? 'AUTHORIZED TEACHER COPY' : 'STUDENT PRACTICE VERSION'}
+                      </div>
+                    </div>
+                  </div>
 
-          {/* Footer */}
-          <div className="mt-12 text-center text-xs text-slate-400 print:text-gray-400 font-mono">
-            Generated by 錯題本 2025
+                  {/* Content Table */}
+                  <div className="flex-grow">
+                    <table className="w-full border-collapse text-lg font-serif">
+                      <thead>
+                        <tr className="bg-slate-50 print:bg-gray-50 border-y-2 border-slate-800">
+                          <th className="p-4 w-16 text-center font-black text-slate-500">#</th>
+                          <th className="p-4 text-left font-black">測驗內容</th>
+                          <th className="p-4 w-1/4 text-center font-black border-x border-slate-100">作答區</th>
+                          <th className="p-4 w-1/4 text-center font-black">初評/訂正</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {quizData
+                          .slice(pageIndex * QUESTIONS_PER_PAGE, (pageIndex + 1) * QUESTIONS_PER_PAGE)
+                          .map((w, i) => {
+                            let questionContent: React.ReactNode = w.字詞;
+                            let answerContent = '';
+                            let type = w.錯誤類型 || '';
+                            
+                            if (type.includes('字形')) {
+                              const match = w.字詞.match(/「(.*?)」/);
+                              const targetChar = match ? match[1] : '';
+                              if (targetChar) {
+                                const hint = w.注音 ? w.注音 : '　　';
+                                questionContent = w.字詞.replace(/「.*?」/, ` 「 (${hint}) 」 `);
+                                answerContent = targetChar;
+                              }
+                            } else if (type.includes('字音')) {
+                              questionContent = w.字詞;
+                              answerContent = w.注音 || '';
+                            } else if (type.includes('成語') || type.includes('詞義') || type === '字詞' || type === '字義' || type === '語詞') {
+                              questionContent = w.字詞;
+                              answerContent = w.釋義 || '';
+                            } else {
+                              questionContent = (
+                                <div className="space-y-2">
+                                  <div className="font-bold">{w.字詞}</div>
+                                  {w.考點 && <div className="text-sm underline underline-offset-4 decoration-slate-200">{w.考點}</div>}
+                                </div>
+                              );
+                              answerContent = w.詳情 || '';
+                            }
+
+                            return (
+                              <tr key={w.ID} className="border-b border-slate-100">
+                                <td className="p-4 text-center text-slate-400 font-bold align-middle">
+                                  {pageIndex * QUESTIONS_PER_PAGE + i + 1}
+                                </td>
+                                <td className="p-6 font-serif text-2xl align-middle leading-relaxed text-slate-800">
+                                  {questionContent}
+                                </td>
+                                <td className="p-6 bg-slate-50/20 border-x border-slate-100 align-middle text-center min-h-[70px]">
+                                  {quizMode === 'teacher' && (
+                                    <div className="text-rose-600 font-black text-3xl animate-in zoom-in duration-300">
+                                      {answerContent}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="p-4 align-middle"></td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="mt-12 pt-8 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-300 font-black uppercase tracking-[0.2em]">
+                    <div className="flex gap-4">
+                      <span>AI LEARNING ENGINE</span>
+                      <span>PAGE {pageIndex + 1} OF {totalPages}</span>
+                    </div>
+                    <div className="font-bold">{new Date().toLocaleDateString()}</div>
+                  </div>
+                </div>
+              ));
+            })()}
           </div>
         </div>
       )}

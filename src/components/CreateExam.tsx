@@ -113,6 +113,9 @@ export const CreateExam: React.FC = () => {
   };
 
   if (status === 'preview' || status === 'printing') {
+    const QUESTIONS_PER_PAGE = 15;
+    const totalPages = Math.ceil(questions.length / QUESTIONS_PER_PAGE);
+
     return (
       <div className="max-w-5xl mx-auto p-4 md:p-8">
         {/* Print Controls */}
@@ -152,65 +155,80 @@ export const CreateExam: React.FC = () => {
               className="flex items-center gap-2 px-8 py-2.5 bg-teal-600 text-white rounded-2xl hover:bg-teal-700 transition-all font-black shadow-lg shadow-teal-100"
             >
               <Printer size={18} />
-              列印考卷
+              列印考卷 / 儲存 PDF
             </button>
           </div>
         </div>
 
         {/* Paper Layout */}
-        <div className="bg-white shadow-2xl min-h-[297mm] w-full max-w-[210mm] mx-auto p-12 md:p-20 print:p-0 print:shadow-none print:w-full print:max-w-none rounded-[2.5rem] print:rounded-none overflow-hidden relative">
-          <div className="absolute top-0 left-0 w-full h-1 bg-teal-600/10 print:hidden"></div>
-          
-          <div className="text-center border-b-4 border-slate-800 pb-10 mb-12">
-            <h1 className="text-4xl font-serif font-black mb-6 tracking-[0.3em] text-slate-900">國語文能力診斷練習卷</h1>
-            <div className="flex justify-between items-end text-lg font-serif text-slate-800 px-6">
-              <div className="space-x-12 flex items-center">
-                <span className="border-b-2 border-slate-300 pb-1 px-4 min-w-[120px]">班級：</span>
-                <span className="border-b-2 border-slate-300 pb-1 px-4 min-w-[150px]">姓名：</span>
-                <span className="border-b-2 border-slate-300 pb-1 px-4 min-w-[100px]">座號：</span>
+        <div className="space-y-8 print:space-y-0">
+          {Array.from({ length: totalPages }).map((_, pageIndex) => (
+            <div 
+              key={pageIndex}
+              className="bg-white shadow-2xl min-h-[297mm] w-full max-w-[210mm] mx-auto p-12 md:p-20 print:p-8 print:shadow-none print:w-full print:max-w-none rounded-[2.5rem] print:rounded-none overflow-hidden relative flex flex-col print:break-after-page mb-8 print:mb-0"
+            >
+              {/* Header - Only on every page for consistent look like the sample */}
+              <div className="text-center border-b-4 border-slate-800 pb-10 mb-12">
+                <h1 className="text-4xl font-serif font-black mb-6 tracking-[0.3em] text-slate-900">國語文能力診斷練習卷</h1>
+                <div className="flex justify-between items-end text-lg font-serif text-slate-800 px-6">
+                  <div className="space-x-12 flex items-center">
+                    <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[100px]">班級：</span>
+                    <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[120px]">姓名：</span>
+                    <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[80px]">座號：</span>
+                  </div>
+                  <div className="px-4 py-1.5 bg-slate-100 rounded-lg text-[10px] font-black text-slate-500 tracking-widest uppercase">
+                    {quizMode === 'teacher' ? 'TEACHER COPY' : 'STUDENT VERSION'}
+                  </div>
+                </div>
               </div>
-              <div className="px-4 py-1.5 bg-slate-100 rounded-lg text-xs font-bold text-slate-500 tracking-widest uppercase">
-                {quizMode === 'teacher' ? 'AUTHORIZED TEACHER COPY' : 'STUDENT PRACTICE VERSION'}
+
+              <div className="flex-grow">
+                <table className="w-full border-collapse text-lg font-serif">
+                  <thead>
+                    <tr className="bg-slate-50 print:bg-gray-50 border-y-2 border-slate-800">
+                      <th className="p-4 w-16 text-center font-black text-slate-600">#</th>
+                      <th className="p-4 text-left font-black">測驗內容</th>
+                      <th className="p-4 w-1/4 text-center font-black border-x border-slate-100">作答區</th>
+                      <th className="p-4 w-1/4 text-center font-black">初評/訂正</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {questions
+                      .slice(pageIndex * QUESTIONS_PER_PAGE, (pageIndex + 1) * QUESTIONS_PER_PAGE)
+                      .map((q, i) => (
+                        <tr key={i} className="border-b border-slate-100">
+                          <td className="p-4 text-center text-slate-400 font-bold align-middle">
+                            {pageIndex * QUESTIONS_PER_PAGE + i + 1}
+                          </td>
+                          <td className="p-6 font-serif text-2xl align-middle leading-relaxed text-slate-800">
+                            {q.question}
+                            {q.hint && <span className="text-slate-400 text-sm italic ml-3">※{q.hint}</span>}
+                          </td>
+                          <td className="p-6 bg-slate-50/20 border-x border-slate-100 align-middle text-center min-h-[70px]">
+                            {quizMode === 'teacher' && (
+                              <div className="text-rose-600 font-black text-3xl animate-in zoom-in duration-300">
+                                {q.answer}
+                              </div>
+                            )}
+                          </td>
+                          <td className="p-4 align-middle"></td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-12 pt-8 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-300 font-black uppercase tracking-[0.2em]">
+                <div className="flex gap-4">
+                  <span>AI LEARNING ANALYTICS</span>
+                  <span>{new Date().toLocaleDateString()}</span>
+                </div>
+                <div className="text-slate-500 font-bold text-sm">
+                  {pageIndex + 1} / {totalPages}
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-lg font-serif">
-              <thead>
-                <tr className="bg-slate-50 print:bg-gray-50 border-y-2 border-slate-800">
-                  <th className="p-4 w-16 text-center font-black text-slate-500">#</th>
-                  <th className="p-4 text-left font-black">測驗內容</th>
-                  <th className="p-4 w-1/4 text-left font-black">作答區</th>
-                  <th className="p-4 w-1/4 text-left font-black">初評/訂正</th>
-                </tr>
-              </thead>
-              <tbody>
-                {questions.map((q, i) => (
-                  <tr key={i} className="border-b border-slate-100 hover:bg-slate-50/30 transition-colors">
-                    <td className="p-4 text-center text-slate-400 font-bold align-top pt-6">{q.id || i + 1}</td>
-                    <td className="p-6 font-serif text-xl align-top leading-relaxed text-slate-800">
-                      {q.question}
-                      {q.hint && <span className="text-slate-400 text-sm italic ml-3">※{q.hint}</span>}
-                    </td>
-                    <td className="p-6 bg-slate-50/20 border-x border-slate-100 align-top min-h-[60px]">
-                      {quizMode === 'teacher' && (
-                        <div className="text-rose-600 font-black text-2xl animate-in zoom-in duration-300 shadow-sm inline-block px-2">
-                          {q.answer}
-                        </div>
-                      )}
-                    </td>
-                    <td className="p-4 align-top"></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="mt-20 pt-8 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-300 font-black uppercase tracking-[0.2em] italic">
-            <span>Powered by AI Learning Engine</span>
-            <span>Generated At {new Date().toLocaleDateString()}</span>
-          </div>
+          ))}
         </div>
       </div>
     );
