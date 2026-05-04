@@ -130,32 +130,34 @@ export const Card: React.FC<CardProps> = ({ word, size, onEdit }) => {
 
   return (
     <div className={`relative bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-teal-100/50 transition-all hover:-translate-y-1.5 flex flex-col overflow-hidden ${cardWidth} ${isFocusMode ? 'ring-2 ring-teal-50 shadow-teal-50' : ''}`}>
-      <div className={`absolute top-3 left-3 w-7 h-7 rounded-2xl flex items-center justify-center text-xs font-black z-10 shadow-sm ${getBadgeColor(count)} transition-all transform hover:scale-110`}>
-        {count > 0 ? count : ''}
-      </div>
-      
-      <div className="absolute top-3 right-3 flex gap-2 z-10">
-        <button 
-          onClick={startAiChallenge}
-          className="w-8 h-8 rounded-2xl bg-white/80 backdrop-blur-sm hover:bg-teal-50 hover:text-teal-600 flex items-center justify-center text-teal-400 transition-all shadow-sm border border-teal-50 group"
-          title="考考相似題 (AI)"
-        >
-          <Sparkles size={16} className="group-hover:rotate-12 transition-transform" />
-        </button>
-        <button 
-          onClick={() => setIsExpanded(true)}
-          className="w-8 h-8 rounded-2xl bg-white/80 backdrop-blur-sm hover:bg-slate-50 hover:text-slate-800 flex items-center justify-center text-slate-400 transition-all shadow-sm border border-slate-100"
-          title="放大"
-        >
-          <Maximize2 size={16} />
-        </button>
-        <button 
-          onClick={() => onEdit(word)}
-          className="w-8 h-8 rounded-2xl bg-white/80 backdrop-blur-sm hover:bg-orange-50 hover:text-orange-500 flex items-center justify-center text-slate-400 transition-all shadow-sm border border-slate-100"
-          title="編輯"
-        >
-          <Edit2 size={16} />
-        </button>
+      <div className="flex justify-between items-start p-3 pb-0 z-10 bg-white/50 backdrop-blur-sm">
+        <div className={`w-7 h-7 rounded-2xl flex items-center justify-center text-xs font-black shadow-sm ${getBadgeColor(count)} transition-all transform hover:scale-110`}>
+          {count > 0 ? count : ''}
+        </div>
+        
+        <div className="flex gap-1.5">
+          <button 
+            onClick={startAiChallenge}
+            className="w-8 h-8 rounded-2xl bg-white border border-teal-100 hover:bg-teal-50 hover:text-teal-600 flex items-center justify-center text-teal-400 transition-all shadow-sm group"
+            title="考考相似題 (AI)"
+          >
+            <Sparkles size={16} className="group-hover:rotate-12 transition-transform" />
+          </button>
+          <button 
+            onClick={() => setIsExpanded(true)}
+            className="w-8 h-8 rounded-2xl bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-800 flex items-center justify-center text-slate-400 transition-all shadow-sm"
+            title="放大"
+          >
+            <Maximize2 size={16} />
+          </button>
+          <button 
+            onClick={() => onEdit(word)}
+            className="w-8 h-8 rounded-2xl bg-white border border-slate-200 hover:bg-orange-50 hover:text-orange-500 flex items-center justify-center text-slate-400 transition-all shadow-sm"
+            title="編輯"
+          >
+            <Edit2 size={16} />
+          </button>
+        </div>
       </div>
 
       {/* AI Challenge Modal */}
@@ -202,21 +204,22 @@ export const Card: React.FC<CardProps> = ({ word, size, onEdit }) => {
                   </p>
                   {challenges[currentChallengeIdx].options && (
                     <div className="mt-6 grid grid-cols-1 gap-3">
-                       {challenges[currentChallengeIdx].options.split(/\s+([ABCD]\.)/g).filter((s, i) => i % 2 !== 0 || s.trim()).reduce((acc, curr, i, arr) => {
-                         // This is tricky because options format can vary.
-                         // Let's assume most AI output A. B. C. D.
-                         return acc; 
-                       }, [] as string[])}
-                       
-                       {/* Better display: just split by common separators if needed, 
-                           but actually the AI prompt is now specific about the format.
-                           Let's simplify for now. */}
                        <div className="text-slate-600 font-bold space-y-3">
-                          {challenges[currentChallengeIdx].options.split('\n').filter(Boolean).map((opt, i) => (
-                            <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 hover:border-teal-300 transition-all cursor-pointer shadow-sm">
-                              {opt}
-                            </div>
-                          ))}
+                          {(() => {
+                            const rawOptions = challenges[currentChallengeIdx].options;
+                            // Try splitting by newline first
+                            let opts = rawOptions.split(/\n+/).filter(o => o.trim());
+                            // If only one line, try splitting by A. B. C. D.
+                            if (opts.length <= 1) {
+                              const matches = rawOptions.match(/[ABCD]\.[^ABCD]+/g);
+                              if (matches) opts = matches;
+                            }
+                            return opts.map((opt, i) => (
+                              <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 hover:border-teal-300 transition-all cursor-pointer shadow-sm">
+                                {opt.trim()}
+                              </div>
+                            ));
+                          })()}
                        </div>
                     </div>
                   )}
@@ -271,7 +274,7 @@ export const Card: React.FC<CardProps> = ({ word, size, onEdit }) => {
         document.body
       )}
 
-      <div className={`p-6 pb-2 text-center px-10 ${size === 's' ? 'pt-16' : 'pt-14'}`}>
+      <div className={`p-4 md:p-6 pb-2 text-center px-10`}>
         <div className={`font-black text-slate-800 tracking-tight leading-tight ${size === 'l' ? 'text-3xl' : 'text-2xl'}`}>
           {word.字詞}
         </div>

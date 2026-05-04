@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Word } from '../types';
 import { api } from '../services/api';
-import { CheckCircle, XCircle, RotateCcw, Settings, Play, Filter, Shuffle, SortDesc } from 'lucide-react';
+import { CheckCircle, XCircle, RotateCcw, Settings, Play, Filter, Shuffle, SortDesc, Sparkles, X, Loader2, CheckCircle2 } from 'lucide-react';
+import { GoogleGenAI } from "@google/genai";
+import { createPortal } from 'react-dom';
 
 interface ReviewProps {
   mode: 'today' | 'wrong';
@@ -16,6 +18,76 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   
+  // AI Challenge State
+  const [isChallenging, setIsChallenging] = useState(false);
+  const [challenges, setChallenges] = useState<{ question: string; options: string; answer: string; explanation: string }[]>([]);
+  const [currentChallengeIdx, setCurrentChallengeIdx] = useState(0);
+  const [isGeneratingChallenge, setIsGeneratingChallenge] = useState(false);
+  const [showChallengeAnswer, setShowChallengeAnswer] = useState(false);
+
+  const startAiChallenge = async (word: Word) => {
+    const apiKey = localStorage.getItem('gemini_api_key');
+    if (!apiKey) return alert('請先在設定中輸入 Gemini API Key');
+
+    setIsGeneratingChallenge(true);
+    setIsChallenging(true);
+    setShowChallengeAnswer(false);
+    setChallenges([]);
+    setCurrentChallengeIdx(0);
+
+    try {
+      const ai = new GoogleGenAI({ apiKey });
+      
+      const prompt = `你現在是一位精通「台灣國中會考（近十年）」命題規律的國文名師。
+      請針對以下考點或題目，提供 3 題「相似題」供學生複習練習。
+
+      優先原則：
+      1. 優先檢索或模擬「近十年國中會考」中出現過的相似考點真題。
+      2. 若真題不足 3 題，請根據會考的命題風格（情境化、重理解、跨領域）自行設計高品質的仿真題。
+
+      題目要求：
+      - 考點必須與原始資料完全一致（例如：同一個字、同一個成語、同一個文法觀念）。
+      - 必須是選擇題（A, B, C, D）。
+      - 必須包含「解析」，解釋為何選該項以及其它選項的錯誤原因。
+
+      原始資料：
+      類型：${word.錯誤類型}
+      內容：${word.字詞}
+      釋義：${word.釋義}
+      考點：${word.考點}
+      
+      請回傳 JSON 格式的數組（Array），包含 3 個物件。每個物件包含：
+      1. question: 題目內容。
+      2. options: 四個選項（如 "A.xxx B.xxx C.xxx D.xxx"）。
+      3. answer: 正確答案（例如 "C"）。
+      4. explanation: 詳盡的解析。
+      
+      請直接回傳純 JSON 代碼，切勿包含 Markdown 標記（如 \`\`\`json）。`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+      });
+
+      const text = response.text || "";
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      const jsonStr = jsonMatch ? jsonMatch[0] : text.replace(/```json/g, '').replace(/```/g, '').trim();
+      
+      const parsed = JSON.parse(jsonStr);
+      if (Array.isArray(parsed)) {
+        setChallenges(parsed);
+      } else {
+        setChallenges([parsed]);
+      }
+    } catch (error) {
+      console.error(error);
+      alert('生成相似題失敗，請稍後再試');
+      setIsChallenging(false);
+    } finally {
+      setIsGeneratingChallenge(false);
+    }
+  };
+
   // Config state
   const [config, setConfig] = useState({
     count: mode === 'today' ? 15 : 20,
@@ -280,13 +352,136 @@ export const Review: React.FC<ReviewProps> = ({ mode, words, token, onFinish }) 
   return (
     <div className="max-w-2xl mx-auto p-4 md:p-8 flex flex-col items-center">
       <div className="w-full flex justify-between items-center mb-6 px-2">
-        <div className="text-slate-500 font-mono font-medium bg-slate-100 px-3 py-1 rounded-full text-sm">
-          {currentIndex + 1} / {queue.length}
+        <div className="flex items-center gap-3">
+          <div className="text-slate-500 font-mono font-medium bg-slate-100 px-3 py-1 rounded-full text-sm">
+            {currentIndex + 1} / {queue.length}
+          </div>
+          {isFlipped && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); startAiChallenge(currentWord); }}
+              className="flex items-center gap-2 px-3 py-1 bg-white border border-teal-100 text-teal-600 rounded-full text-xs font-black shadow-sm hover:bg-teal-50 transition-all group"
+            >
+              <Sparkles size={14} className="group-hover:rotate-12 transition-transform" />
+              AI 仿真題
+            </button>
+          )}
         </div>
         <div className="text-slate-400 text-sm">
           點擊卡片翻面
         </div>
       </div>
+
+      {/* AI Challenge Modal */}
+      {isChallenging && createPortal(
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setIsChallenging(false)}>
+          <div 
+            className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg p-8 flex flex-col relative animate-in zoom-in-95 duration-300 border border-teal-100"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-8">
+              <div className="flex items-center gap-3">
+                <div className="bg-teal-100 p-2 rounded-2xl">
+                  <Sparkles size={24} className="text-teal-600" />
+                </div>
+                <span className="text-slate-800 font-black text-xl tracking-tight">AI 仿真題挑戰</span>
+              </div>
+              <button 
+                onClick={() => setIsChallenging(false)}
+                className="p-2 rounded-full hover:bg-slate-50 text-slate-300 hover:text-slate-500 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {isGeneratingChallenge ? (
+              <div className="py-16 flex flex-col items-center justify-center gap-6">
+                <div className="relative">
+                  <div className="w-16 h-16 border-4 border-teal-100 rounded-full animate-pulse"></div>
+                  <Loader2 size={32} className="animate-spin text-teal-600 absolute inset-0 m-auto" />
+                </div>
+                <p className="text-slate-500 font-bold text-lg text-center">AI 老師正在調研會考題庫中...</p>
+              </div>
+            ) : challenges.length > 0 ? (
+              <div className="space-y-8">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-black text-teal-600 bg-teal-50 px-3 py-1 rounded-full uppercase tracking-widest">
+                    第 {currentChallengeIdx + 1} 題 / 共 {challenges.length} 題
+                  </span>
+                </div>
+                
+                <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
+                  <p className="text-xl font-bold text-slate-800 leading-relaxed font-serif">
+                    {challenges[currentChallengeIdx].question}
+                  </p>
+                  {challenges[currentChallengeIdx].options && (
+                    <div className="mt-6 grid grid-cols-1 gap-3">
+                       <div className="text-slate-600 font-bold space-y-3">
+                          {(() => {
+                            const rawOptions = challenges[currentChallengeIdx].options;
+                            let opts = rawOptions.split(/\n+/).filter(o => o.trim());
+                            if (opts.length <= 1) {
+                              const matches = rawOptions.match(/[ABCD]\.[^ABCD]+/g);
+                              if (matches) opts = matches;
+                            }
+                            return opts.map((opt, i) => (
+                              <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 hover:border-teal-300 transition-all cursor-pointer shadow-sm">
+                                {opt.trim()}
+                              </div>
+                            ));
+                          })()}
+                       </div>
+                    </div>
+                  )}
+                </div>
+
+                {!showChallengeAnswer ? (
+                  <button 
+                    onClick={() => setShowChallengeAnswer(true)}
+                    className="w-full py-4 bg-teal-600 text-white rounded-2xl font-black text-lg hover:bg-teal-700 transition-all shadow-xl shadow-teal-200"
+                  >
+                    揭曉答案與解析
+                  </button>
+                ) : (
+                  <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+                    <div className="bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100 shadow-sm shadow-emerald-50">
+                      <div className="text-emerald-600 font-black text-[10px] mb-2 flex items-center gap-2 uppercase tracking-widest">
+                        <CheckCircle2 size={14} /> 正確答案
+                      </div>
+                      <p className="text-2xl font-black text-emerald-800">{challenges[currentChallengeIdx].answer}</p>
+                    </div>
+                    <div className="bg-teal-50/50 p-6 rounded-3xl border border-teal-100 max-h-[200px] overflow-y-auto scrollbar-none">
+                       <div className="text-teal-600 font-black text-[10px] mb-2 uppercase tracking-widest">名師深度解析</div>
+                       <p className="text-slate-700 leading-relaxed text-base font-medium">{challenges[currentChallengeIdx].explanation}</p>
+                    </div>
+                    
+                    <div className="flex gap-4">
+                      {currentChallengeIdx < challenges.length - 1 ? (
+                        <button 
+                          onClick={() => {
+                            setCurrentChallengeIdx(prev => prev + 1);
+                            setShowChallengeAnswer(false);
+                          }}
+                          className="flex-grow py-4 bg-teal-600 text-white rounded-2xl font-black text-lg hover:bg-teal-700 transition-all shadow-xl shadow-teal-100"
+                        >
+                          下一題驗收
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => setIsChallenging(false)}
+                          className="flex-grow py-4 bg-emerald-600 text-white rounded-2xl font-black text-lg hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100"
+                        >
+                          挑戰成功！
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+        </div>,
+        document.body
+      )}
 
       <div 
         onClick={() => setIsFlipped(!isFlipped)}
