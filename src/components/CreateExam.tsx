@@ -165,12 +165,12 @@ export const CreateExam: React.FC = () => {
           {Array.from({ length: totalPages }).map((_, pageIndex) => (
             <div 
               key={pageIndex}
-              className="bg-white shadow-2xl min-h-[297mm] w-full max-w-[210mm] mx-auto p-10 md:p-14 print:p-8 print:shadow-none print:w-full print:max-w-none rounded-[2.5rem] print:rounded-none overflow-hidden relative flex flex-col print:break-after-page mb-8 print:mb-0"
+              className="bg-white shadow-2xl min-h-[297mm] w-full max-w-[210mm] mx-auto p-10 md:p-14 print:p-10 print:shadow-none print:w-[210mm] print:h-[297mm] print:min-h-[297mm] print:rounded-none overflow-hidden relative flex flex-col print:break-after-page mb-8 print:mb-0"
             >
               {/* Header - Only on the FIRST page */}
               {pageIndex === 0 ? (
-                <div className="text-center border-b-4 border-slate-800 pb-6 mb-8">
-                  <h1 className="text-3xl font-serif font-black mb-4 tracking-[0.3em] text-slate-900">國語文能力診斷練習卷</h1>
+                <div className="text-center border-b-4 border-slate-800 pb-4 mb-6">
+                  <h1 className="text-3xl font-serif font-black mb-3 tracking-[0.3em] text-slate-900">國語文能力診斷練習卷</h1>
                   <div className="flex justify-between items-end text-lg font-serif text-slate-800 px-6">
                     <div className="space-x-8 flex items-center">
                       <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[80px]">班級：</span>
@@ -206,11 +206,11 @@ export const CreateExam: React.FC = () => {
                           <td className="p-2 text-center text-slate-400 font-bold align-middle border-r border-slate-300">
                             {pageIndex * QUESTIONS_PER_PAGE + i + 1}
                           </td>
-                          <td className="p-2 md:p-3 font-serif text-lg align-middle leading-tight text-slate-800 border-r border-slate-300">
+                          <td className="py-2 px-3 font-serif text-lg align-middle leading-tight text-slate-800 border-r border-slate-300">
                             {q.question}
                             {q.hint && <span className="text-slate-400 text-xs italic ml-2">※{q.hint}</span>}
                           </td>
-                          <td className="p-2 md:p-3 bg-slate-50/10 align-middle text-center min-h-[50px] border-r border-slate-300">
+                          <td className="py-2 px-3 bg-slate-50/10 align-middle text-center min-h-[50px] border-r border-slate-300">
                             {quizMode === 'teacher' && (
                               <div className="text-rose-600 font-black text-xl animate-in zoom-in duration-300">
                                 {q.answer}
@@ -224,7 +224,7 @@ export const CreateExam: React.FC = () => {
                 </table>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-slate-100 flex justify-between items-center text-[9px] text-slate-300 font-black uppercase tracking-[0.2em]">
+              <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-[9px] text-slate-300 font-black uppercase tracking-[0.2em]">
                 <div className="flex gap-4">
                   <span>AI LEARNING ANALYTICS</span>
                   <span>{new Date().toLocaleDateString()}</span>
