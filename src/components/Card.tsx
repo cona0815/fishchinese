@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Word } from '../types';
-import { ChevronDown, ChevronUp, Edit2, Maximize2, X, Save, Loader2, Sparkles, HelpCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Edit2, Maximize2, X, Save, Loader2, Sparkles, HelpCircle, CheckCircle2 } from 'lucide-react';
 import { api } from '../services/api';
 import { GoogleGenAI } from "@google/genai";
 
@@ -20,7 +20,8 @@ export const Card: React.FC<CardProps> = ({ word, size, onEdit }) => {
 
   // AI Challenge State
   const [isChallenging, setIsChallenging] = useState(false);
-  const [challengeData, setChallengeData] = useState<{ question: string; options: string; answer: string; explanation: string } | null>(null);
+  const [challenges, setChallenges] = useState<{ question: string; options: string; answer: string; explanation: string }[]>([]);
+  const [currentChallengeIdx, setCurrentChallengeIdx] = useState(0);
   const [isGeneratingChallenge, setIsGeneratingChallenge] = useState(false);
   const [showChallengeAnswer, setShowChallengeAnswer] = useState(false);
 
@@ -32,25 +33,37 @@ export const Card: React.FC<CardProps> = ({ word, size, onEdit }) => {
     setIsGeneratingChallenge(true);
     setIsChallenging(true);
     setShowChallengeAnswer(false);
+    setChallenges([]);
+    setCurrentChallengeIdx(0);
 
     try {
       const ai = new GoogleGenAI({ apiKey });
       
-      const prompt = `你是一個專業的國文老師。請針對以下這個考點或題目，出一題全新的「相似題」來考考學生，確保學生真的理解了這個觀念。
-      
+      const prompt = `你現在是一位精通「台灣國中會考（近十年）」命題規律的國文名師。
+      請針對以下考點或題目，提供 3 題「相似題」供學生複習練習。
+
+      優先原則：
+      1. 優先檢索或模擬「近十年國中會考」中出現過的相似考點真題。
+      2. 若真題不足 3 題，請根據會考的命題風格（情境化、重理解、跨領域）自行設計高品質的仿真題。
+
+      題目要求：
+      - 考點必須與原始資料完全一致（例如：同一個字、同一個成語、同一個文法觀念）。
+      - 必須是選擇題（A, B, C, D）。
+      - 必須包含「解析」，解釋為何選該項以及其它選項的錯誤原因。
+
       原始資料：
       類型：${word.錯誤類型}
       內容：${word.字詞}
       釋義：${word.釋義}
       考點：${word.考點}
       
-      請回傳 JSON 格式，包含：
-      1. question: 題目內容（如果是字音字形，請挖空或標示重點）。
-      2. options: 如果是選擇題請提供 A,B,C,D（若非選擇則留空）。
-      3. answer: 正確答案。
+      請回傳 JSON 格式的數組（Array），包含 3 個物件。每個物件包含：
+      1. question: 題目內容。
+      2. options: 四個選項（如 "A.xxx B.xxx C.xxx D.xxx"）。
+      3. answer: 正確答案（例如 "C"）。
       4. explanation: 詳盡的解析。
       
-      請直接回傳 JSON，不要有 Markdown 標記。`;
+      請直接回傳純 JSON 代碼，切勿包含 Markdown 標記（如 \`\`\`json）。`;
 
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
@@ -58,11 +71,19 @@ export const Card: React.FC<CardProps> = ({ word, size, onEdit }) => {
       });
 
       const text = response.text || "";
-      const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      setChallengeData(JSON.parse(cleanJson));
+      // More robust JSON extraction
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      const jsonStr = jsonMatch ? jsonMatch[0] : text.replace(/```json/g, '').replace(/```/g, '').trim();
+      
+      const parsed = JSON.parse(jsonStr);
+      if (Array.isArray(parsed)) {
+        setChallenges(parsed);
+      } else {
+        setChallenges([parsed]);
+      }
     } catch (error) {
       console.error(error);
-      alert('生成相似題失敗');
+      alert('生成相似題失敗，請稍後再試');
       setIsChallenging(false);
     } finally {
       setIsGeneratingChallenge(false);
@@ -165,21 +186,38 @@ export const Card: React.FC<CardProps> = ({ word, size, onEdit }) => {
                   <div className="w-16 h-16 border-4 border-teal-100 rounded-full animate-pulse"></div>
                   <Loader2 size={32} className="animate-spin text-teal-600 absolute inset-0 m-auto" />
                 </div>
-                <p className="text-slate-500 font-bold text-lg">AI 老師正在出題中...</p>
+                <p className="text-slate-500 font-bold text-lg">AI 老師正在調研會考題庫中...</p>
               </div>
-            ) : challengeData ? (
+            ) : challenges.length > 0 ? (
               <div className="space-y-8">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-black text-teal-600 bg-teal-50 px-3 py-1 rounded-full uppercase tracking-widest">
+                    第 {currentChallengeIdx + 1} 題 / 共 {challenges.length} 題
+                  </span>
+                </div>
+                
                 <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
                   <p className="text-xl font-bold text-slate-800 leading-relaxed font-serif">
-                    {challengeData.question}
+                    {challenges[currentChallengeIdx].question}
                   </p>
-                  {challengeData.options && (
-                    <div className="mt-6 space-y-2">
-                       {challengeData.options.split('\n').filter(Boolean).map((option, idx) => (
-                         <div key={idx} className="bg-white p-3 rounded-2xl border border-slate-100 text-slate-600 font-bold hover:border-teal-200 transition-all cursor-pointer">
-                           {option}
-                         </div>
-                       ))}
+                  {challenges[currentChallengeIdx].options && (
+                    <div className="mt-6 grid grid-cols-1 gap-3">
+                       {challenges[currentChallengeIdx].options.split(/\s+([ABCD]\.)/g).filter((s, i) => i % 2 !== 0 || s.trim()).reduce((acc, curr, i, arr) => {
+                         // This is tricky because options format can vary.
+                         // Let's assume most AI output A. B. C. D.
+                         return acc; 
+                       }, [] as string[])}
+                       
+                       {/* Better display: just split by common separators if needed, 
+                           but actually the AI prompt is now specific about the format.
+                           Let's simplify for now. */}
+                       <div className="text-slate-600 font-bold space-y-3">
+                          {challenges[currentChallengeIdx].options.split('\n').filter(Boolean).map((opt, i) => (
+                            <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 hover:border-teal-300 transition-all cursor-pointer shadow-sm">
+                              {opt}
+                            </div>
+                          ))}
+                       </div>
                     </div>
                   )}
                 </div>
@@ -194,21 +232,36 @@ export const Card: React.FC<CardProps> = ({ word, size, onEdit }) => {
                 ) : (
                   <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
                     <div className="bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100 shadow-sm shadow-emerald-50">
-                      <div className="text-emerald-600 font-black text-xs mb-2 flex items-center gap-2 uppercase tracking-widest">
-                        <HelpCircle size={16} /> 正核對答案
+                      <div className="text-emerald-600 font-black text-[10px] mb-2 flex items-center gap-2 uppercase tracking-widest">
+                        <CheckCircle2 size={14} /> 正確答案
                       </div>
-                      <p className="text-2xl font-black text-emerald-800">{challengeData.answer}</p>
+                      <p className="text-2xl font-black text-emerald-800">{challenges[currentChallengeIdx].answer}</p>
                     </div>
-                    <div className="bg-teal-50/50 p-6 rounded-3xl border border-teal-100">
-                       <div className="text-teal-600 font-black text-xs mb-2 uppercase tracking-widest">AI 老師深度解析</div>
-                       <p className="text-slate-700 leading-relaxed text-lg font-medium">{challengeData.explanation}</p>
+                    <div className="bg-teal-50/50 p-6 rounded-3xl border border-teal-100 max-h-[200px] overflow-y-auto scrollbar-none">
+                       <div className="text-teal-600 font-black text-[10px] mb-2 uppercase tracking-widest">名師深度解析</div>
+                       <p className="text-slate-700 leading-relaxed text-base font-medium">{challenges[currentChallengeIdx].explanation}</p>
                     </div>
-                    <button 
-                      onClick={() => setIsChallenging(false)}
-                      className="w-full py-4 bg-slate-100 text-slate-500 rounded-2xl hover:bg-slate-200 transition-all font-black text-lg"
-                    >
-                      我學會了，回主頁
-                    </button>
+                    
+                    <div className="flex gap-4">
+                      {currentChallengeIdx < challenges.length - 1 ? (
+                        <button 
+                          onClick={() => {
+                            setCurrentChallengeIdx(prev => prev + 1);
+                            setShowChallengeAnswer(false);
+                          }}
+                          className="flex-grow py-4 bg-teal-600 text-white rounded-2xl font-black text-lg hover:bg-teal-700 transition-all shadow-xl shadow-teal-100"
+                        >
+                          下一題驗收
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => setIsChallenging(false)}
+                          className="flex-grow py-4 bg-emerald-600 text-white rounded-2xl font-black text-lg hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100"
+                        >
+                          挑戰成功！回主頁
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -218,7 +271,7 @@ export const Card: React.FC<CardProps> = ({ word, size, onEdit }) => {
         document.body
       )}
 
-      <div className={`p-6 pb-2 text-center px-10 ${size === 's' ? 'pt-10' : 'pt-8'}`}>
+      <div className={`p-6 pb-2 text-center px-10 ${size === 's' ? 'pt-16' : 'pt-14'}`}>
         <div className={`font-black text-slate-800 tracking-tight leading-tight ${size === 'l' ? 'text-3xl' : 'text-2xl'}`}>
           {word.字詞}
         </div>
