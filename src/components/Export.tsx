@@ -252,18 +252,18 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
               return Array.from({ length: totalPages }).map((_, pageIndex) => (
                 <div 
                   key={pageIndex}
-                  className="bg-white shadow-2xl min-h-[297mm] w-full max-w-[210mm] mx-auto p-12 md:p-20 print:p-8 print:shadow-none print:w-full print:max-w-none rounded-[2.5rem] print:rounded-none overflow-hidden relative flex flex-col print:break-after-page mb-8 print:mb-0"
+                  className="bg-white shadow-2xl min-h-[297mm] w-full max-w-[210mm] mx-auto p-12 md:p-16 print:p-8 print:shadow-none print:w-full print:max-w-none rounded-[2.5rem] print:rounded-none overflow-hidden relative flex flex-col print:break-after-page mb-8 print:mb-0"
                 >
                   {/* Header */}
-                  <div className="text-center border-b-4 border-slate-800 pb-10 mb-12">
-                    <h1 className="text-4xl font-serif font-black mb-6 tracking-[0.3em] text-slate-900 uppercase">國語文能力診斷練習卷</h1>
+                  <div className="text-center border-b-4 border-slate-800 pb-6 mb-8">
+                    <h1 className="text-3xl font-serif font-black mb-4 tracking-[0.3em] text-slate-900 uppercase">國語文能力診斷練習卷</h1>
                     <div className="flex justify-between items-end text-lg font-serif text-slate-800 px-6">
-                      <div className="space-x-12 flex items-center">
-                        <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[100px]">班級：</span>
-                        <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[120px]">姓名：</span>
-                        <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[80px]">座號：</span>
+                      <div className="space-x-8 flex items-center">
+                        <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[80px]">班級：</span>
+                        <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[100px]">姓名：</span>
+                        <span className="border-b-2 border-slate-300 pb-1 px-2 min-w-[60px]">座號：</span>
                       </div>
-                      <div className="px-4 py-1.5 bg-slate-100 rounded-lg text-[10px] font-black text-slate-500 tracking-widest uppercase">
+                      <div className="px-3 py-1 bg-slate-100 rounded-lg text-[9px] font-black text-slate-500 tracking-widest uppercase">
                         {quizMode === 'teacher' ? 'AUTHORIZED TEACHER COPY' : 'STUDENT PRACTICE VERSION'}
                       </div>
                     </div>
@@ -271,13 +271,13 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
 
                   {/* Content Table */}
                   <div className="flex-grow">
-                    <table className="w-full border-collapse text-lg font-serif">
+                    <table className="w-full border-collapse text-base font-serif">
                       <thead>
-                        <tr className="bg-slate-50 print:bg-gray-50 border-y-2 border-slate-800">
-                          <th className="p-4 w-16 text-center font-black text-slate-500">#</th>
-                          <th className="p-4 text-left font-black">測驗內容</th>
-                          <th className="p-4 w-1/4 text-center font-black border-x border-slate-100">作答區</th>
-                          <th className="p-4 w-1/4 text-center font-black">初評/訂正</th>
+                        <tr className="bg-slate-50 print:bg-gray-100 border-y-2 border-slate-800">
+                          <th className="p-2 w-12 text-center font-black text-slate-500">#</th>
+                          <th className="p-2 text-left font-black">測驗內容</th>
+                          <th className="p-2 w-1/4 text-center font-black border-x border-slate-100">作答區</th>
+                          <th className="p-2 w-1/4 text-center font-black">初評/訂正</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -304,9 +304,9 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
                               answerContent = w.釋義 || '';
                             } else {
                               questionContent = (
-                                <div className="space-y-2">
-                                  <div className="font-bold">{w.字詞}</div>
-                                  {w.考點 && <div className="text-sm underline underline-offset-4 decoration-slate-200">{w.考點}</div>}
+                                <div className="space-y-1">
+                                  <div className="font-bold text-lg">{w.字詞}</div>
+                                  {w.考點 && <div className="text-xs underline underline-offset-4 decoration-slate-200">{w.考點}</div>}
                                 </div>
                               );
                               answerContent = w.詳情 || '';
@@ -314,20 +314,20 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
 
                             return (
                               <tr key={w.ID} className="border-b border-slate-100">
-                                <td className="p-4 text-center text-slate-400 font-bold align-middle">
+                                <td className="p-2 text-center text-slate-400 font-bold align-middle">
                                   {pageIndex * QUESTIONS_PER_PAGE + i + 1}
                                 </td>
-                                <td className="p-6 font-serif text-2xl align-middle leading-relaxed text-slate-800">
+                                <td className="p-3 font-serif text-lg align-middle leading-tight text-slate-800">
                                   {questionContent}
                                 </td>
-                                <td className="p-6 bg-slate-50/20 border-x border-slate-100 align-middle text-center min-h-[70px]">
+                                <td className="p-3 bg-slate-50/20 border-x border-slate-100 align-middle text-center min-h-[50px]">
                                   {quizMode === 'teacher' && (
-                                    <div className="text-rose-600 font-black text-3xl animate-in zoom-in duration-300">
+                                    <div className="text-rose-600 font-black text-xl animate-in zoom-in duration-300">
                                       {answerContent}
                                     </div>
                                   )}
                                 </td>
-                                <td className="p-4 align-middle"></td>
+                                <td className="p-2 align-middle"></td>
                               </tr>
                             );
                           })}
@@ -336,7 +336,7 @@ export const Export: React.FC<ExportProps> = ({ words }) => {
                   </div>
 
                   {/* Footer */}
-                  <div className="mt-12 pt-8 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-300 font-black uppercase tracking-[0.2em]">
+                  <div className="mt-8 pt-4 border-t border-slate-100 flex justify-between items-center text-[9px] text-slate-300 font-black uppercase tracking-[0.2em]">
                     <div className="flex gap-4">
                       <span>AI LEARNING ENGINE</span>
                       <span>PAGE {pageIndex + 1} OF {totalPages}</span>
