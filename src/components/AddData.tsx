@@ -413,21 +413,30 @@ export const AddData: React.FC<AddDataProps> = ({ token, onSuccess, initialData,
                     <X size={20} />
                   </button>
                 </div>
-
-                <div className="bg-slate-50 p-6 rounded-[1.5rem]">
-                  <label className="block text-[10px] font-black text-slate-400 mb-3 uppercase tracking-[0.2em] ml-1">
-                    指定特定題號 (可留空，AI 將自動辨認錯題)
-                  </label>
-                  <input
-                    type="text"
-                    value={questionNumbers}
-                    onChange={(e) => setQuestionNumbers(e.target.value)}
-                    placeholder="例如：3, 8, 12"
-                    className="w-full p-5 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-teal-50 outline-none transition-all placeholder-slate-300 font-black text-lg text-slate-700"
-                  />
-                </div>
               </div>
             )}
+          </div>
+
+          {/* Question Numbers Setup */}
+          <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
+            <label className="block text-slate-800 font-black mb-2 flex items-center gap-2">
+              <Sparkles size={20} className="text-blue-500" />
+              智能提取：指定錯題題號
+            </label>
+            <p className="text-slate-500 text-sm mb-4 font-medium">若您上傳了整份題本或考卷，可以直接在此輸入想提取的題號，AI 會自動幫您尋找。</p>
+            <div className="bg-slate-50 p-6 rounded-[1.5rem] border border-slate-100">
+              <label className="block text-[10px] font-black text-slate-400 mb-3 uppercase tracking-[0.2em] ml-1">
+                指定特定題號 (可留空，AI 將自動尋找被標記的錯題)
+              </label>
+              <input
+                type="text"
+                value={questionNumbers}
+                onChange={(e) => setQuestionNumbers(e.target.value)}
+                placeholder="例如：3, 8, 12"
+                className="w-full p-5 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-teal-50 focus:border-teal-400 outline-none transition-all placeholder-slate-300 font-black text-lg text-slate-700"
+                disabled={status === 'analyzing'}
+              />
+            </div>
           </div>
 
           {/* Action Button */}
